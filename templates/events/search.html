@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Search — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:900px;">
+  <div class="page-header">
+    <h1>🔍 Search Children</h1>
+    <p class="subtitle">Search by Registration ID, Name, or Phone number</p>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body p-4">
+      <form method="get" action="{% url 'search' %}" class="search-bar">
+        <div class="d-flex gap-3">
+          <input
+            type="text"
+            name="q"
+            id="searchInput"
+            value="{{ query }}"
+            placeholder="Search by ID (NAV001), name, or phone..."
+            class="form-control form-control-lg"
+            autofocus
+            autocomplete="off"
+          >
+          <button type="submit" class="btn btn-primary btn-lg" style="white-space:nowrap;">🔍 Search</button>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">
+          ℹ️ Phone numbers may return multiple results if multiple children share the same number.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if query %}
+    {% if results %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <strong style="color:var(--purple-dark);">{{ results|length }} result{{ results|length|pluralize }} found for "{{ query }}"</strong>
+    </div>
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table-navratri">
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Registration ID</th>
+                <th>Child Name</th>
+                <th>Guardian</th>
+                <th>Phone</th>
+                <th>Age</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for child in results %}
+              <tr>
+                <td>
+                  {% if child.photo %}
+                  <img src="{{ child.photo.url }}" alt="{{ child.name }}"
+                       style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
+                  {% else %}
+                  <div style="width:50px;height:50px;background:var(--purple-lite);border-radius:8px;
+                              display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👶</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="fw-700" style="color:var(--purple);font-size:1rem;letter-spacing:1px;">
+                    {{ child.registration_id }}
+                  </span>
+                </td>
+                <td><strong>{{ child.name }}</strong></td>
+                <td>{{ child.guardian_name }}</td>
+                <td>{{ child.phone }}</td>
+                <td>{{ child.age|default:"—" }}</td>
+                <td>
+                  <div class="d-flex gap-1 flex-wrap">
+                    <a href="{% url 'child_profile' child.pk %}" class="btn btn-sm btn-primary">View</a>
+                    <a href="{% url 'entry' %}?id={{ child.registration_id }}" class="btn btn-sm btn-success-nav">🚪 Verify</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="card p-5 text-center">
+      <div style="font-size:4rem;">🔍</div>
+      <h4 class="fw-700 mt-3" style="color:var(--purple-dark);">No results found</h4>
+      <p style="color:var(--text-muted);">No children match "{{ query }}".</p>
+      <a href="{% url 'register_child' %}" class="btn btn-saffron btn-lg mx-auto" style="display:inline-flex;">
+        ➕ Register This Child
+      </a>
+    </div>
+    {% endif %}
+  {% else %}
+  <div class="card p-5 text-center">
+    <div style="font-size:4rem;">🔍</div>
+    <h4 class="fw-700 mt-3" style="color:var(--purple-dark);">Enter a search term above</h4>
+    <p style="color:var(--text-muted);">Search by Registration ID, child name, or phone number.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Delete {{ child.registration_id }} — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:500px;">
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--red-dark),var(--red));">
+      ⚠️ Confirm Deletion
+    </div>
+    <div class="card-body p-4 text-center">
+      {% if child.photo %}
+      <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-photo mx-auto mb-3">
+      {% endif %}
+      <div class="reg-id-display mb-2">{{ child.registration_id }}</div>
+      <h4 class="fw-700">{{ child.name }}</h4>
+      <p style="color:var(--text-muted);">{{ child.guardian_name }} &bull; {{ child.phone }}</p>
+
+      <div class="alert-danger-custom text-start mb-4">
+        ⚠️ <strong>This action cannot be undone.</strong> All attendance and gift records for this child will also be deleted.
+      </div>
+
+      <form method="post" class="d-flex gap-3 justify-content-center">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger-nav btn-xl">🗑️ Yes, Delete</button>
+        <a href="{% url 'child_profile' child.pk %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

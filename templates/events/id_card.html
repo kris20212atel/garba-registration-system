@@ -1,0 +1,360 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ID Card — {{ child.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a0a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Outfit', sans-serif;
+      padding: 2rem 1rem;
+      gap: 1.5rem;
+    }
+
+    /* ── Buttons row ── */
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-dl {
+      background: linear-gradient(135deg, #D4430A, #F4831F);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 20px rgba(212,67,10,0.5);
+      transition: all 0.2s;
+    }
+    .btn-dl:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-back {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 12px;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-back:hover { background: rgba(255,255,255,0.25); color: white; }
+
+    /* ── ID CARD ── */
+    #id-card {
+      width: 340px;
+      background: #fdf8ee;
+      border-radius: 18px;
+      border: 4px solid #C0392B;
+      box-shadow: 0 0 0 2px #8B0000, 0 12px 40px rgba(0,0,0,0.4);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Corner ornaments */
+    #id-card::before, #id-card::after {
+      content: '◆';
+      position: absolute;
+      font-size: 1.2rem;
+      color: #C0392B;
+      z-index: 10;
+    }
+    #id-card::before { top: 8px; left: 10px; }
+    #id-card::after  { top: 8px; right: 10px; }
+
+    /* ── TOP SECTION (logo + side tassels) ── */
+    .card-top {
+      background: #fdf8ee;
+      padding: 1rem 0.75rem 0.5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Decorative side ribbons (left) */
+    .tassel-left {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding-top: 12px;
+    }
+    .tassel-right {
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding-top: 12px;
+    }
+    .tassel-diamond {
+      width: 12px; height: 12px;
+      transform: rotate(45deg);
+    }
+    .td-red    { background: #C0392B; }
+    .td-green  { background: #27AE60; }
+    .td-yellow { background: #F39C12; }
+
+    /* ── Logo ── */
+    .logo-img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* ── Floral divider row (red/yellow/green teardrops) ── */
+    .floral-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      overflow: hidden;
+      height: 46px;
+      position: relative;
+    }
+    .petal {
+      width: 32px; height: 44px;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: relative;
+    }
+    .petal-r { background: #C0392B; transform: rotate(-35deg) translateY(4px); }
+    .petal-y { background: #F39C12; transform: rotate(0deg) translateY(-2px); }
+    .petal-g { background: #27AE60; transform: rotate(35deg) translateY(4px); }
+
+    /* ── Photo section ── */
+    .photo-section {
+      padding: 0 1.5rem 0.75rem;
+      text-align: center;
+    }
+    .photo-frame {
+      width: 150px;
+      height: 150px;
+      border: 4px solid #F39C12;
+      border-radius: 12px;
+      margin: 0 auto;
+      overflow: hidden;
+      background: #e8e8e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .photo-placeholder {
+      font-size: 4rem;
+      color: #aaa;
+    }
+
+    /* ── Fields (Name / ID No.) ── */
+    .fields-section {
+      padding: 0.75rem 1.5rem 0.5rem;
+    }
+    .field-row {
+      background: #f0ecff;
+      border: 1.5px solid #8B6DBE;
+      border-radius: 10px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #5B2D8E;
+      white-space: nowrap;
+    }
+    .field-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      border-bottom: 1.5px solid #8B6DBE;
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    /* ── Bottom floral ── */
+    .floral-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0;
+      height: 44px;
+      overflow: hidden;
+      margin-top: 0.25rem;
+    }
+    .petal-b { transform: rotate(0deg) translateY(8px); }
+    .petal-br { transform: rotate(-40deg) translateY(8px); }
+    .petal-bl { transform: rotate(40deg) translateY(8px); }
+
+    /* Spinner */
+    #spinner {
+      display: none;
+      width: 22px; height: 22px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ── ID CARD (this gets captured) ── -->
+<div id="id-card">
+
+  <!-- Corner dots (bottom) -->
+  <div style="position:absolute;bottom:8px;left:10px;font-size:1.2rem;color:#C0392B;z-index:10;">◆</div>
+  <div style="position:absolute;bottom:8px;right:10px;font-size:1.2rem;color:#C0392B;z-index:10;">◆</div>
+
+  <!-- TOP: tassels + logo -->
+  <div class="card-top">
+    <!-- Left tassels -->
+    <div class="tassel-left">
+      <div class="tassel-diamond td-red"></div>
+      <div class="tassel-diamond td-green"></div>
+      <div class="tassel-diamond td-yellow"></div>
+      <div style="width:2px;height:30px;background:#C0392B;margin:2px auto;"></div>
+      <div style="font-size:0.7rem;">🔴</div>
+    </div>
+    <!-- Right tassels -->
+    <div class="tassel-right">
+      <div class="tassel-diamond td-red"></div>
+      <div class="tassel-diamond td-green"></div>
+      <div class="tassel-diamond td-yellow"></div>
+      <div style="width:2px;height:30px;background:#C0392B;margin:2px auto;"></div>
+      <div style="font-size:0.7rem;">🔴</div>
+    </div>
+    <!-- Logo -->
+    <img src="{% static 'garba_logo.jpg' %}" alt="Sardarnagar Garba Mahotsav" class="logo-img" crossorigin="anonymous">
+  </div>
+
+  <!-- Floral row (top) -->
+  <div class="floral-row">
+    <div class="petal petal-r"></div>
+    <div class="petal petal-y" style="width:38px;height:50px;"></div>
+    <div class="petal petal-g" style="width:28px;height:36px;"></div>
+    <div class="petal petal-y" style="width:44px;height:56px;transform:translateY(-6px);"></div>
+    <div class="petal petal-r" style="width:28px;height:36px;"></div>
+    <div class="petal petal-y" style="width:38px;height:50px;"></div>
+    <div class="petal" style="background:#C0392B;width:24px;height:32px;transform:rotate(35deg) translateY(4px);"></div>
+  </div>
+
+  <!-- Photo -->
+  <div class="photo-section">
+    <div class="photo-frame">
+      {% if child.photo %}
+        <img src="{{ child.photo.url }}" alt="{{ child.name }}" crossorigin="anonymous">
+      {% else %}
+        <div class="photo-placeholder">👶</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Fields -->
+  <div class="fields-section">
+    <div class="field-row">
+      <span class="field-label">Name:</span>
+      <span class="field-value">{{ child.name }}</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">ID No.:</span>
+      <span class="field-value">{{ child.registration_id }}</span>
+    </div>
+  </div>
+
+  <!-- Bottom floral -->
+  <div class="floral-bottom">
+    <div class="petal petal-br" style="background:#C0392B;width:28px;height:38px;"></div>
+    <div class="petal petal-r petal-bl" style="width:30px;height:42px;"></div>
+    <div class="petal petal-b" style="background:#27AE60;width:36px;height:52px;transform:translateY(4px);"></div>
+    <div class="petal" style="background:#F39C12;width:42px;height:56px;border-radius:50%;transform:translateY(6px);"></div>
+    <div class="petal petal-b" style="background:#27AE60;width:36px;height:52px;transform:translateY(4px);"></div>
+    <div class="petal petal-r petal-br" style="width:30px;height:42px;transform:rotate(-40deg) translateY(8px);"></div>
+    <div class="petal petal-bl" style="background:#C0392B;width:28px;height:38px;transform:rotate(40deg) translateY(8px);"></div>
+  </div>
+
+</div><!-- end #id-card -->
+
+<!-- ── Buttons ── -->
+<div class="btn-row">
+  <button class="btn-dl" id="downloadBtn" onclick="downloadCard()">
+    <span id="dlIcon">⬇️</span>
+    <span id="dlText">Download ID Card</span>
+    <div id="spinner"></div>
+  </button>
+  <a href="{% url 'child_profile' child.pk %}" class="btn-back">← Back to Profile</a>
+</div>
+
+<script>
+async function downloadCard() {
+  const btn = document.getElementById('downloadBtn');
+  document.getElementById('dlIcon').style.display = 'none';
+  document.getElementById('dlText').textContent = 'Generating...';
+  document.getElementById('spinner').style.display = 'block';
+  btn.disabled = true;
+
+  try {
+    const card = document.getElementById('id-card');
+    const canvas = await html2canvas(card, {
+      scale: 3,           // High resolution
+      useCORS: true,
+      backgroundColor: null,
+      logging: false,
+    });
+
+    const link = document.createElement('a');
+    link.download = 'ID_Card_{{ child.registration_id }}_{{ child.name|slugify }}.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    alert('Download failed. Please try again.');
+    console.error(err);
+  } finally {
+    document.getElementById('dlIcon').style.display = 'inline';
+    document.getElementById('dlText').textContent = 'Download ID Card';
+    document.getElementById('spinner').style.display = 'none';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

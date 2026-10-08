@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Register Child — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:700px;">
+  <div class="page-header">
+    <h1>➕ Register New Child</h1>
+    <p class="subtitle">Fill in the child's details. Registration ID will be auto-generated.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📋 Child Registration Form</div>
+    <div class="card-body p-4">
+      <!-- Preview Registration ID -->
+      <div class="text-center mb-4">
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">Next Registration ID</div>
+        <div class="reg-id-display" id="previewId">AUTO-GENERATED</div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="registrationForm">
+        {% csrf_token %}
+
+        <!-- Name -->
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.name.id_for_label }}">👶 Child Name *</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+            <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Guardian -->
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">👨‍👩‍👧 Parent/Guardian Name *</label>
+          {{ form.guardian_name }}
+          {% if form.guardian_name.errors %}
+            <div class="invalid-feedback d-block">{{ form.guardian_name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.phone.id_for_label }}">📞 Phone Number *</label>
+          {{ form.phone }}
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
+            ℹ️ Multiple children can share the same phone number.
+          </div>
+          {% if form.phone.errors %}
+            <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Photo -->
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.photo.id_for_label }}">📷 Child Photo *</label>
+          {{ form.photo }}
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
+            JPEG, PNG, WebP or GIF. Max 5 MB.
+          </div>
+          {% if form.photo.errors %}
+            <div class="invalid-feedback d-block">{{ form.photo.errors.0 }}</div>
+          {% endif %}
+          <!-- Photo preview -->
+          <div id="photoPreviewContainer" class="mt-2" style="display:none;">
+            <img id="photoPreview" src="" alt="Preview"
+                 style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:3px solid var(--saffron);">
+          </div>
+        </div>
+
+        <!-- Age & Gender Row -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.age.id_for_label }}">🎂 Age (optional)</label>
+            {{ form.age }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.gender.id_for_label }}">⚧ Gender (optional)</label>
+            {{ form.gender }}
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-4">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">📝 Notes (optional)</label>
+          {{ form.notes }}
+        </div>
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-danger-custom mb-3">
+          {{ form.non_field_errors.0 }}
+        </div>
+        {% endif %}
+
+        <div class="d-flex gap-3">
+          <button type="submit" class="btn btn-saffron btn-xl flex-grow-1" id="submitBtn">
+            ✅ Register Child
+          </button>
+          <a href="{% url 'child_list' %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Photo preview
+document.querySelector('input[type=file]').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      document.getElementById('photoPreview').src = ev.target.result;
+      document.getElementById('photoPreviewContainer').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// Prevent double submit
+document.getElementById('registrationForm').addEventListener('submit', function() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Registering...';
+});
+</script>
+{% endblock %}

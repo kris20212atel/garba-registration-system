@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Registration Successful — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:600px;">
+  <div class="text-center fade-in">
+    <!-- Success Icon -->
+    <div style="font-size:5rem;margin-bottom:1rem;">🎉</div>
+    <h1 class="fw-800" style="color:var(--green-dark);">Registration Successful!</h1>
+    <p style="color:var(--text-muted);">The child has been registered for Navratri {{ event_config.name }}.</p>
+  </div>
+
+  <div class="card mt-4 fade-in">
+    <div class="card-header text-center" style="background:linear-gradient(135deg,var(--green-dark),var(--green));">
+      ✅ Registration Confirmation
+    </div>
+    <div class="card-body p-4 text-center">
+      <!-- Registration ID Big Display -->
+      <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.5rem;">REGISTRATION ID</div>
+      <div class="reg-id-display mb-4">{{ child.registration_id }}</div>
+
+      <!-- Photo -->
+      {% if child.photo %}
+      <img src="{{ child.photo.url }}" alt="{{ child.name }}"
+           class="child-photo-lg mb-3">
+      {% else %}
+      <div class="child-photo-placeholder mx-auto mb-3" style="width:160px;height:160px;border-radius:16px;">👶</div>
+      {% endif %}
+
+      <!-- Details -->
+      <h2 class="fw-800 mb-1" style="color:var(--purple-dark);">{{ child.name }}</h2>
+      <p style="color:var(--text-muted);">
+        👨‍👩‍👧 {{ child.guardian_name }}<br>
+        📞 {{ child.phone }}
+        {% if child.age %} &bull; Age {{ child.age }}{% endif %}
+      </p>
+
+      <hr style="border-color:var(--border);">
+
+      <div class="alert-info-custom text-start mb-3">
+        📌 Please note the Registration ID: <strong>{{ child.registration_id }}</strong><br>
+        This ID will be used for entry and gift verification every day.
+      </div>
+
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{% url 'id_card' child.pk %}" class="btn btn-saffron btn-lg">🪪 Download ID Card</a>
+        <a href="{% url 'register_child' %}" class="btn btn-primary btn-lg">➕ Register Another</a>
+        <a href="{% url 'entry' %}" class="btn btn-success-nav btn-lg">🚪 Entry Page</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ child.registration_id }} — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:700px;">
+  <div class="page-header">
+    <h1>✏️ Edit Child — {{ child.registration_id }}</h1>
+    <p class="subtitle">Update the details for <strong>{{ child.name }}</strong></p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📋 Edit Registration</div>
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <div class="reg-id-display">{{ child.registration_id }}</div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Current photo -->
+        {% if child.photo %}
+        <div class="mb-3">
+          <label class="form-label">Current Photo</label>
+          <div class="d-flex align-items-center gap-3">
+            <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-photo">
+            <div style="color:var(--text-muted);font-size:0.85rem;">
+              Upload a new photo below to replace this one.
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.name.id_for_label }}">👶 Child Name *</label>
+          {{ form.name }}
+          {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">👨‍👩‍👧 Parent/Guardian Name *</label>
+          {{ form.guardian_name }}
+          {% if form.guardian_name.errors %}<div class="invalid-feedback d-block">{{ form.guardian_name.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.phone.id_for_label }}">📞 Phone Number *</label>
+          {{ form.phone }}
+          {% if form.phone.errors %}<div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="{{ form.photo.id_for_label }}">📷 Photo (optional — leave blank to keep current)</label>
+          {{ form.photo }}
+          {% if form.photo.errors %}<div class="invalid-feedback d-block">{{ form.photo.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.age.id_for_label }}">🎂 Age</label>
+            {{ form.age }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.gender.id_for_label }}">⚧ Gender</label>
+            {{ form.gender }}
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">📝 Notes</label>
+          {{ form.notes }}
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert-danger-custom mb-3">{{ form.non_field_errors.0 }}</div>
+        {% endif %}
+
+        <div class="d-flex gap-3">
+          <button type="submit" class="btn btn-saffron btn-xl flex-grow-1">💾 Save Changes</button>
+          <a href="{% url 'child_profile' child.pk %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Export Data — Navratri EMS{% endblock %}
+
+{% block content %}
+<div class="page-wrapper" style="max-width:700px;">
+  <div class="page-header">
+    <h1>📤 Export Data</h1>
+    <p class="subtitle">Download Excel files of your event data</p>
+  </div>
+
+  <div class="row g-3">
+    <!-- Children -->
+    <div class="col-md-6">
+      <div class="card p-4 text-center h-100">
+        <div style="font-size:2.5rem;">👥</div>
+        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">All Registered Children</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Complete list with all registration details</p>
+        <a href="{% url 'export_data' %}?type=children" class="btn btn-primary btn-lg mt-auto">
+          📥 Download
+        </a>
+      </div>
+    </div>
+
+    <!-- Today Attendance -->
+    <div class="col-md-6">
+      <div class="card p-4 text-center h-100">
+        <div style="font-size:2.5rem;">🚪</div>
+        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Today's Attendance</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Day {{ event_config.current_day }} entry records</p>
+        <a href="{% url 'export_data' %}?type=today_attendance" class="btn btn-success-nav btn-lg mt-auto">
+          📥 Download Day {{ event_config.current_day }}
+        </a>
+      </div>
+    </div>
+
+    <!-- Today Gifts -->
+    <div class="col-md-6">
+      <div class="card p-4 text-center h-100">
+        <div style="font-size:2.5rem;">🎁</div>
+        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Today's Gift Distribution</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Day {{ event_config.current_day }} gift records</p>
+        <a href="{% url 'export_data' %}?type=today_gifts" class="btn btn-saffron btn-lg mt-auto">
+          📥 Download Day {{ event_config.current_day }}
+        </a>
+      </div>
+    </div>
+
+    <!-- All Attendance -->
+    <div class="col-md-6">
+      <div class="card p-4 text-center h-100">
+        <div style="font-size:2.5rem;">📊</div>
+        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Complete Attendance History</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted);">All 20 days of entry records</p>
+        <a href="{% url 'export_data' %}?type=all_attendance" class="btn btn-primary btn-lg mt-auto">
+          📥 Download All Days
+        </a>
+      </div>
+    </div>
+
+    <!-- All Gifts -->
+    <div class="col-md-6">
+      <div class="card p-4 text-center h-100">
+        <div style="font-size:2.5rem;">🎊</div>
+        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Complete Gift History</h5>
+        <p style="font-size:0.85rem;color:var(--text-muted);">All 20 days of gift distribution records</p>
+        <a href="{% url 'export_data' %}?type=all_gifts" class="btn btn-saffron btn-lg mt-auto">
+          📥 Download All Days
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-info-custom mt-4">
+    ℹ️ All exports are in Excel (.xlsx) format with colored headers. Open in Microsoft Excel, Google Sheets, or LibreOffice Calc.
+  </div>
+</div>
+{% endblock %}
