@@ -556,9 +556,25 @@ def _xlsx_response(wb, filename):
     return response
 
 
-# ─────────────────────────── Home redirect ───────────────────────────────────
-
 def home(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     return redirect('login')
+
+
+def setup_database(request):
+    """Emergency trigger to run migrations and setup via HTTP if needed."""
+    key = request.GET.get('key', '')
+    if key != 'navratri2026':
+        return HttpResponse('Unauthorized. Pass ?key=navratri2026', status=403)
+    from io import StringIO
+    from django.core.management import call_command
+    out = StringIO()
+    try:
+        call_command('migrate', interactive=False, run_syncdb=True, stdout=out)
+        call_command('init_setup', interactive=False, stdout=out)
+        return HttpResponse(f'<pre style="font-family:monospace;padding:20px;background:#f0fdf4;color:#166534;">'
+                            f'SUCCESS! Database initialized:\n\n{out.getvalue()}</pre>')
+    except Exception as e:
+        return HttpResponse(f'<pre style="font-family:monospace;padding:20px;background:#fef2f2;color:#991b1b;">'
+                            f'ERROR: {e}\n\nLog:\n{out.getvalue()}</pre>', status=500)
