@@ -6,6 +6,10 @@ from events.models import EventConfig
 class Command(BaseCommand):
     help = 'Automatically initialize database with EventConfig and default admin if missing'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--interactive', dest='interactive', action='store_true', default=False)
+        parser.add_argument('--noinput', '--no-input', dest='interactive', action='store_false')
+
     def handle(self, *args, **options):
         # 1. Initialize EventConfig
         config = EventConfig.get_config()

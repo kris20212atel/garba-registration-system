@@ -572,7 +572,7 @@ def setup_database(request):
     out = StringIO()
     try:
         call_command('migrate', interactive=False, run_syncdb=True, stdout=out)
-        call_command('init_setup', interactive=False, stdout=out)
+        call_command('init_setup', stdout=out)
         return HttpResponse(f'<pre style="font-family:monospace;padding:20px;background:#f0fdf4;color:#166534;">'
                             f'SUCCESS! Database initialized:\n\n{out.getvalue()}</pre>')
     except Exception as e:

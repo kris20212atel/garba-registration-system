@@ -9,7 +9,7 @@ application = get_wsgi_application()
 try:
     from django.core.management import call_command
     call_command('migrate', interactive=False, run_syncdb=True)
-    call_command('init_setup', interactive=False)
+    call_command('init_setup')
 except Exception as e:
     import logging
     logging.getLogger(__name__).warning("Startup auto-migration notice: %s", e)
