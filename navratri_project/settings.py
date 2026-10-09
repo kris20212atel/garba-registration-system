@@ -16,15 +16,23 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'navratri-dev-secret-key-change-in-pro
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,garba-registration-system.vercel.app').split(',')
 
-# Allow Railway's generated domain automatically
+# Allow Railway and Vercel domains automatically
 RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL', '')
 if RAILWAY_STATIC_URL:
     ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
-# Also allow any *.railway.app and *.up.railway.app domains
-ALLOWED_HOSTS += ['.railway.app', '.up.railway.app']
+# Also allow any *.railway.app, *.up.railway.app, and *.vercel.app domains
+ALLOWED_HOSTS += ['.railway.app', '.up.railway.app', '.vercel.app', '.now.sh', '*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
