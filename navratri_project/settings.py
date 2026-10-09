@@ -79,8 +79,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'navratri_project.wsgi.application'
 
 # ── Database ──────────────────────────────────────────────────────────────────
-# If DATABASE_URL is set (Railway provides this automatically), use PostgreSQL.
-# Otherwise fall back to local SQLite.
+# If DATABASE_URL is set (Railway, Supabase, Neon, etc.), use PostgreSQL.
+# Otherwise fall back to SQLite.
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
 if DATABASE_URL:
@@ -88,10 +88,25 @@ if DATABASE_URL:
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
 else:
+    # On Vercel serverless functions, the root directory is read-only.
+    # Writable SQLite database must reside in /tmp.
+    if os.environ.get('VERCEL'):
+        import shutil
+        tmp_db = Path('/tmp/db.sqlite3')
+        src_db = BASE_DIR / 'db.sqlite3'
+        if not tmp_db.exists() and src_db.exists():
+            try:
+                shutil.copyfile(src_db, tmp_db)
+            except Exception:
+                pass
+        db_path = tmp_db
+    else:
+        db_path = BASE_DIR / 'db.sqlite3'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_path,
         }
     }
 
@@ -125,7 +140,11 @@ STORAGES = {
 
 # ── Media files ───────────────────────────────────────────────────────────────
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+if os.environ.get('VERCEL'):
+    MEDIA_ROOT = Path('/tmp/media')
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+else:
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
