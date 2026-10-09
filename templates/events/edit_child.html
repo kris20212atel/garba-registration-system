@@ -77,11 +77,90 @@
         <!-- Photo -->
         <div class="mb-3">
           <label class="form-label" for="{{ form.photo.id_for_label }}">
-            New Photograph (Optional)
+            Photograph
           </label>
           <div class="p-3 border rounded-3 bg-light" style="border:1px dashed var(--primary-border) !important;background:var(--bg) !important;">
-            {{ form.photo }}
-            <div class="form-hint mt-1">Leave empty to retain existing photo.</div>
+            <!-- Hidden input for camera base64 data -->
+            <input type="hidden" name="camera_photo" id="cameraPhotoInput" value="">
+
+            {% if child.photo %}
+            <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" id="currentPhotoBlock">
+              <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-photo-card" style="width:70px;height:70px;object-fit:cover;border-radius:10px;">
+              <div>
+                <span class="badge-chip badge-purple mb-1" style="font-size:0.75rem;">Current Photo</span>
+                <div class="text-secondary" style="font-size:0.8125rem;">Upload new file or take photo with camera to replace.</div>
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Action buttons: Upload File vs Take with Camera -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+              <button type="button" class="btn btn-outline-primary" id="openCameraBtn">
+                <i data-lucide="camera"></i>
+                <span>Take Photo with Camera</span>
+              </button>
+              <button type="button" class="btn btn-secondary" id="showFileInputBtn">
+                <i data-lucide="upload"></i>
+                <span>Choose File from Device</span>
+              </button>
+            </div>
+
+            <!-- Standard file input -->
+            <div id="fileUploadContainer">
+              {{ form.photo }}
+              <div class="form-hint mt-1">Leave empty to retain existing photo.</div>
+            </div>
+
+            <!-- Live Camera Viewfinder Box -->
+            <div id="cameraBox" class="camera-box my-3" style="display:none;">
+              <div class="camera-video-container">
+                <video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>
+                <div class="camera-oval-guide"></div>
+              </div>
+              <canvas id="cameraCanvas" style="display:none;"></canvas>
+
+              <div class="camera-controls">
+                <button type="button" class="btn btn-sm btn-outline-light" id="switchCameraBtn" title="Switch Front/Back Camera">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Flip</span>
+                </button>
+                <button type="button" class="camera-shutter-btn" id="captureBtn" title="Click to Capture Photo">
+                  <i data-lucide="camera" style="width:24px;height:24px;"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" id="closeCameraBtn">
+                  <i data-lucide="x"></i>
+                  <span>Close</span>
+                </button>
+              </div>
+              <div class="text-white-50 mt-2" style="font-size:0.75rem;">Center face in the oval and click the red button</div>
+            </div>
+
+            <!-- Camera Error Alert -->
+            <div id="cameraErrorAlert" class="toast-item toast-error mt-2" style="display:none;width:100%;animation:none;">
+              <i data-lucide="alert-triangle"></i>
+              <span id="cameraErrorMessage" style="font-size:0.85rem;">Camera permission denied or camera not found.</span>
+            </div>
+
+            <!-- Photo live preview container -->
+            <div id="photoPreviewContainer" class="mt-3 p-3 bg-white rounded-3 border" style="display:none;">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                  <img id="photoPreview" src="" alt="Preview" class="child-photo-card" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:2px solid var(--primary-accent-border);">
+                  <div>
+                    <span class="badge-chip badge-success mb-1" id="photoStatusBadge">
+                      <i data-lucide="check"></i> New Photo Ready
+                    </span>
+                    <div class="text-secondary" style="font-size:0.8125rem;" id="photoSourceText">Ready to save</div>
+                  </div>
+                </div>
+                <div>
+                  <button type="button" class="btn btn-sm btn-outline-danger" id="removePhotoBtn">
+                    <i data-lucide="trash-2"></i>
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           {% if form.photo.errors %}
             <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.photo.errors.0 }}</div>
@@ -136,4 +215,126 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.querySelector('input[type=file]');
+const cameraBox = document.getElementById('cameraBox');
+const cameraVideo = document.getElementById('cameraVideo');
+const cameraCanvas = document.getElementById('cameraCanvas');
+const cameraPhotoInput = document.getElementById('cameraPhotoInput');
+const openCameraBtn = document.getElementById('openCameraBtn');
+const closeCameraBtn = document.getElementById('closeCameraBtn');
+const captureBtn = document.getElementById('captureBtn');
+const switchCameraBtn = document.getElementById('switchCameraBtn');
+const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+const photoPreview = document.getElementById('photoPreview');
+const photoStatusBadge = document.getElementById('photoStatusBadge');
+const photoSourceText = document.getElementById('photoSourceText');
+const removePhotoBtn = document.getElementById('removePhotoBtn');
+const cameraErrorAlert = document.getElementById('cameraErrorAlert');
+const cameraErrorMessage = document.getElementById('cameraErrorMessage');
+
+let currentStream = null;
+let currentFacingMode = 'user';
+
+if (fileInput) {
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      cameraPhotoInput.value = '';
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        photoPreview.src = ev.target.result;
+        photoPreviewContainer.style.display = 'block';
+        photoStatusBadge.innerHTML = '<i data-lucide="check"></i> File Selected';
+        photoSourceText.textContent = file.name;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+async function startCamera(facingMode = 'user') {
+  stopCamera();
+  cameraErrorAlert.style.display = 'none';
+
+  try {
+    const constraints = {
+      video: {
+        facingMode: facingMode,
+        width: { ideal: 1280 },
+        height: { ideal: 960 }
+      },
+      audio: false
+    };
+    currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+    cameraVideo.srcObject = currentStream;
+    currentFacingMode = facingMode;
+
+    if (facingMode === 'environment') {
+      cameraVideo.classList.add('rear-camera');
+    } else {
+      cameraVideo.classList.remove('rear-camera');
+    }
+
+    cameraBox.style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  } catch (err) {
+    cameraErrorAlert.style.display = 'flex';
+    cameraErrorMessage.textContent = 'Camera error: ' + (err.message || 'Cannot access camera.');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
+}
+
+function stopCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
+    currentStream = null;
+  }
+  cameraBox.style.display = 'none';
+}
+
+if (openCameraBtn) openCameraBtn.addEventListener('click', () => startCamera(currentFacingMode));
+if (closeCameraBtn) closeCameraBtn.addEventListener('click', stopCamera);
+if (switchCameraBtn) {
+  switchCameraBtn.addEventListener('click', () => {
+    startCamera(currentFacingMode === 'user' ? 'environment' : 'user');
+  });
+}
+
+if (captureBtn) {
+  captureBtn.addEventListener('click', () => {
+    if (!cameraVideo.videoWidth) return;
+    cameraCanvas.width = cameraVideo.videoWidth;
+    cameraCanvas.height = cameraVideo.videoHeight;
+    const ctx = cameraCanvas.getContext('2d');
+    if (currentFacingMode === 'user') {
+      ctx.translate(cameraCanvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+    const dataUrl = cameraCanvas.toDataURL('image/jpeg', 0.92);
+    cameraPhotoInput.value = dataUrl;
+    photoPreview.src = dataUrl;
+    photoPreviewContainer.style.display = 'block';
+    photoStatusBadge.innerHTML = '<i data-lucide="camera"></i> Photo Captured';
+    photoSourceText.textContent = 'Captured from camera';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (fileInput) fileInput.value = '';
+    stopCamera();
+  });
+}
+
+if (removePhotoBtn) {
+  removePhotoBtn.addEventListener('click', () => {
+    cameraPhotoInput.value = '';
+    if (fileInput) fileInput.value = '';
+    photoPreview.src = '';
+    photoPreviewContainer.style.display = 'none';
+  });
+}
+</script>
 {% endblock %}

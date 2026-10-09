@@ -146,6 +146,35 @@ def child_profile(request, pk):
     })
 
 
+def _find_child_by_query(query_id):
+    """
+    Find child by raw search query or ID.
+    Supports:
+    - Exact match: e.g. '2026-1'
+    - Plain numbers: e.g. '1', '2', '25' -> matches '2026-1', '2026-2', '2026-25' as well as legacy '1'
+    - '2026-X': also matches legacy 'X'
+    """
+    if not query_id:
+        return None
+    raw = str(query_id).strip()
+    if not raw:
+        return None
+
+    # Check candidates in priority order
+    candidates = [raw]
+    if raw.isdigit():
+        candidates.append(f"2026-{raw}")
+    elif raw.startswith("2026-"):
+        candidates.append(raw[5:])
+
+    for cand in candidates:
+        child = Child.objects.filter(registration_id__iexact=cand).first()
+        if child:
+            return child
+
+    return None
+
+
 # ─────────────────────────── Entry / Gift Verification ───────────────────────
 
 @login_required
@@ -155,10 +184,10 @@ def entry_page(request):
     query_id = ''
 
     if request.method == 'POST':
-        query_id = request.POST.get('registration_id', '').strip().upper()
+        query_id = request.POST.get('registration_id', '').strip()
         if query_id:
-            try:
-                child = Child.objects.get(registration_id=query_id)
+            child = _find_child_by_query(query_id)
+            if child:
                 day = config.current_day
                 attendance = DailyAttendance.objects.filter(child=child, event_day=day).first()
                 gift = DailyGift.objects.filter(child=child, event_day=day).first()
@@ -169,7 +198,7 @@ def entry_page(request):
                     'gift': gift,
                     'day': day,
                 }
-            except Child.DoesNotExist:
+            else:
                 result = {'found': False, 'query': query_id}
 
     return render(request, 'events/entry.html', {
@@ -246,15 +275,15 @@ def record_gift(request, pk):
 # API for live search (AJAX)
 @login_required
 def api_lookup(request):
-    reg_id = request.GET.get('id', '').strip().upper()
+    reg_id = request.GET.get('id', '').strip()
     if not reg_id:
         return JsonResponse({'found': False, 'error': 'No ID provided'})
 
     config = _get_config()
     day = config.current_day
 
-    try:
-        child = Child.objects.get(registration_id=reg_id)
+    child = _find_child_by_query(reg_id)
+    if child:
         attendance = DailyAttendance.objects.filter(child=child, event_day=day).first()
         gift = DailyGift.objects.filter(child=child, event_day=day).first()
 
@@ -280,7 +309,7 @@ def api_lookup(request):
                 'gift_time': gift.gift_time.strftime('%I:%M %p') if gift else None,
             },
         })
-    except Child.DoesNotExist:
+    else:
         return JsonResponse({'found': False, 'error': f'No child with ID {reg_id}'})
 
 
@@ -292,12 +321,19 @@ def search(request):
     results = []
 
     if query:
-        # Search by registration ID, name, or phone
+        # Search by registration ID (supports plain '1', '2026-1', partial), name, guardian, or phone
+        id_q = Q(registration_id__icontains=query)
+        if query.isdigit():
+            id_q |= Q(registration_id__iexact=f"2026-{query}") | Q(registration_id__icontains=f"2026-{query}")
+        elif query.startswith("2026-"):
+            id_q |= Q(registration_id__iexact=query[5:])
+
         children = Child.objects.filter(
-            Q(registration_id__icontains=query) |
+            id_q |
             Q(name__icontains=query) |
+            Q(guardian_name__icontains=query) |
             Q(phone__icontains=query)
-        ).order_by('registration_id')
+        ).order_by('id')
         results = list(children)
 
     return render(request, 'events/search.html', {

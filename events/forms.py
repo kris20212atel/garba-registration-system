@@ -4,11 +4,34 @@ from .models import Child, EventConfig
 import os
 
 
+import base64
+from django.core.files.base import ContentFile
+from django.utils import timezone
+
+
 ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
 
 
+def _parse_camera_photo(camera_data):
+    """Convert a base64 data URL from webcam/camera into a Django ContentFile."""
+    if camera_data and camera_data.startswith('data:image/'):
+        try:
+            format_part, imgstr = camera_data.split(';base64,')
+            ext = format_part.split('/')[-1].split('+')[0]
+            if ext == 'jpeg':
+                ext = 'jpg'
+            data = base64.b64decode(imgstr)
+            timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+            return ContentFile(data, name=f'camera_{timestamp}.{ext}')
+        except Exception:
+            return None
+    return None
+
+
 class ChildRegistrationForm(forms.ModelForm):
+    camera_photo = forms.CharField(required=False, widget=forms.HiddenInput())
+
     class Meta:
         model = Child
         fields = ['name', 'guardian_name', 'phone', 'photo', 'age', 'gender', 'notes']
@@ -24,9 +47,19 @@ class ChildRegistrationForm(forms.ModelForm):
 
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
+        camera_data = self.data.get('camera_photo', '').strip()
+        if not photo and camera_data:
+            parsed = _parse_camera_photo(camera_data)
+            if parsed:
+                photo = parsed
+                self.cleaned_data['photo'] = photo
+
         if photo and hasattr(photo, 'content_type'):
             if photo.content_type not in ALLOWED_IMAGE_TYPES:
                 raise ValidationError('Only JPEG, PNG, WebP, or GIF images are allowed.')
+            if photo.size > MAX_IMAGE_SIZE:
+                raise ValidationError('Image must be under 5 MB.')
+        elif photo and hasattr(photo, 'size'):
             if photo.size > MAX_IMAGE_SIZE:
                 raise ValidationError('Image must be under 5 MB.')
         return photo
@@ -42,6 +75,8 @@ class ChildRegistrationForm(forms.ModelForm):
 
 class ChildEditForm(forms.ModelForm):
     """Edit form - photo is optional (keep existing if not changed)."""
+    camera_photo = forms.CharField(required=False, widget=forms.HiddenInput())
+
     class Meta:
         model = Child
         fields = ['name', 'guardian_name', 'phone', 'photo', 'age', 'gender', 'notes']
@@ -62,9 +97,19 @@ class ChildEditForm(forms.ModelForm):
 
     def clean_photo(self):
         photo = self.cleaned_data.get('photo')
+        camera_data = self.data.get('camera_photo', '').strip()
+        if not photo and camera_data:
+            parsed = _parse_camera_photo(camera_data)
+            if parsed:
+                photo = parsed
+                self.cleaned_data['photo'] = photo
+
         if photo and hasattr(photo, 'content_type'):
             if photo.content_type not in ALLOWED_IMAGE_TYPES:
                 raise ValidationError('Only JPEG, PNG, WebP, or GIF images are allowed.')
+            if photo.size > MAX_IMAGE_SIZE:
+                raise ValidationError('Image must be under 5 MB.')
+        elif photo and hasattr(photo, 'size'):
             if photo.size > MAX_IMAGE_SIZE:
                 raise ValidationError('Image must be under 5 MB.')
         return photo

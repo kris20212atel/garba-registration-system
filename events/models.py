@@ -44,7 +44,7 @@ class Child(models.Model):
     ]
 
     registration_id = models.CharField(
-        max_length=6,
+        max_length=20,
         unique=True,
         db_index=True,
         editable=False
@@ -63,7 +63,7 @@ class Child(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['registration_id']
+        ordering = ['id']
         verbose_name = 'Child'
         verbose_name_plural = 'Children'
 
@@ -77,21 +77,22 @@ class Child(models.Model):
 
     @staticmethod
     def _generate_registration_id():
-        """Generate next available plain integer ID (1, 2, 3, 11, ...)."""
-        last = Child.objects.order_by('-id').first()
-        if not last:
-            return '1'
-        # Find highest numeric ID
+        """Generate next available sequential ID in format 2026-1, 2026-2, etc."""
+        prefix = '2026-'
         all_ids = Child.objects.values_list('registration_id', flat=True)
         max_num = 0
         for rid in all_ids:
-            try:
-                num = int(rid)
-                if num > max_num:
-                    max_num = num
-            except (ValueError, TypeError):
-                pass
-        return str(max_num + 1)
+            if rid:
+                val = str(rid).strip()
+                if val.startswith(prefix):
+                    val = val[len(prefix):]
+                try:
+                    num = int(val)
+                    if num > max_num:
+                        max_num = num
+                except (ValueError, TypeError):
+                    pass
+        return f"{prefix}{max_num + 1}"
 
     def get_history(self):
         """Return 20-day history for this child."""

@@ -27,14 +27,14 @@ class ChildRegistrationTests(TestCase):
             child2.save()
 
     def test_registration_ids_auto_generated_sequential(self):
-        """Registration IDs are auto-generated as 1, 2, 3, etc."""
+        """Registration IDs are auto-generated as 2026-1, 2026-2, 2026-3, etc."""
         child1 = Child.objects.create(name='Child One', guardian_name='G1', phone='9111111111')
         child2 = Child.objects.create(name='Child Two', guardian_name='G2', phone='9222222222')
         child3 = Child.objects.create(name='Child Three', guardian_name='G3', phone='9333333333')
 
-        self.assertEqual(child1.registration_id, '1')
-        self.assertEqual(child2.registration_id, '2')
-        self.assertEqual(child3.registration_id, '3')
+        self.assertEqual(child1.registration_id, '2026-1')
+        self.assertEqual(child2.registration_id, '2026-2')
+        self.assertEqual(child3.registration_id, '2026-3')
 
     def test_phone_numbers_are_not_unique(self):
         """Multiple children can share the same phone number."""
@@ -50,10 +50,12 @@ class ChildRegistrationTests(TestCase):
         self.assertEqual(len(ids), 3)
 
     def test_registration_id_format(self):
-        """Registration ID must be a plain positive integer string."""
+        """Registration ID must follow the 2026-X format."""
         child = Child.objects.create(name='Test Child', guardian_name='Guardian', phone='9111111111')
-        self.assertTrue(child.registration_id.isdigit())
-        self.assertGreater(int(child.registration_id), 0)
+        self.assertTrue(child.registration_id.startswith('2026-'))
+        numeric_part = child.registration_id.split('-', 1)[1]
+        self.assertTrue(numeric_part.isdigit())
+        self.assertGreater(int(numeric_part), 0)
 
 
 class DailyAttendanceTests(TestCase):
@@ -177,14 +179,14 @@ class ViewTests(TestCase):
         self.client.login(username='admin', password='pass')
         response = self.client.post(reverse('entry'), {'registration_id': 'NAV999'})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'REGISTRATION NOT FOUND')
+        self.assertContains(response, 'Registration Not Found')
 
     def test_valid_registration_id_returns_child(self):
         """Valid registration ID shows child details."""
         self.client.login(username='admin', password='pass')
         response = self.client.post(reverse('entry'), {'registration_id': self.child.registration_id})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'CHILD FOUND')
+        self.assertContains(response, 'Child Verified')
         self.assertContains(response, self.child.name)
 
     def test_record_entry_api(self):
