@@ -1,102 +1,152 @@
 {% extends 'base.html' %}
 {% block title %}Register Child — Navratri EMS{% endblock %}
+{% block page_heading %}Register Child{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:700px;">
-  <div class="page-header">
-    <h1>➕ Register New Child</h1>
-    <p class="subtitle">Fill in the child's details. Registration ID will be auto-generated.</p>
+<div class="mx-auto" style="max-width: 720px;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;">Register New Child</h1>
+      <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Create a child registration profile for Navratri 2026.</p>
+    </div>
+    <a href="{% url 'child_list' %}" class="btn btn-secondary">
+      <i data-lucide="arrow-left"></i>
+      <span>Directory</span>
+    </a>
   </div>
 
-  <div class="card">
-    <div class="card-header">📋 Child Registration Form</div>
-    <div class="card-body p-4">
-      <!-- Preview Registration ID -->
-      <div class="text-center mb-4">
-        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">Next Registration ID</div>
-        <div class="reg-id-display" id="previewId">AUTO-GENERATED</div>
+  <div class="card mb-4">
+    <div class="card-header-clean">
+      <h4>
+        <i data-lucide="clipboard-list" style="color:var(--primary-accent);width:18px;height:18px;"></i>
+        <span>Child Registration Form</span>
+      </h4>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-secondary" style="font-size:0.75rem;">ID Assignment:</span>
+        <span class="id-pill">Auto-Generated</span>
       </div>
+    </div>
 
+    <div class="card-body-clean p-4">
       <form method="post" enctype="multipart/form-data" id="registrationForm">
         {% csrf_token %}
 
-        <!-- Name -->
+        <!-- Child Name -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.name.id_for_label }}">👶 Child Name *</label>
+          <label class="form-label" for="{{ form.name.id_for_label }}">
+            Child Name <span class="req">*</span>
+          </label>
           {{ form.name }}
           {% if form.name.errors %}
-            <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.name.errors.0 }}</div>
           {% endif %}
         </div>
 
-        <!-- Guardian -->
+        <!-- Guardian Name -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">👨‍👩‍👧 Parent/Guardian Name *</label>
+          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">
+            Parent / Guardian Name <span class="req">*</span>
+          </label>
           {{ form.guardian_name }}
           {% if form.guardian_name.errors %}
-            <div class="invalid-feedback d-block">{{ form.guardian_name.errors.0 }}</div>
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.guardian_name.errors.0 }}</div>
           {% endif %}
         </div>
 
-        <!-- Phone -->
+        <!-- Contact Phone Number -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.phone.id_for_label }}">📞 Phone Number *</label>
+          <label class="form-label" for="{{ form.phone.id_for_label }}">
+            Contact Phone Number <span class="req">*</span>
+          </label>
           {{ form.phone }}
-          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
-            ℹ️ Multiple children can share the same phone number.
+          <div class="form-hint">
+            Multiple siblings or family members may share the same contact number.
           </div>
           {% if form.phone.errors %}
-            <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.phone.errors.0 }}</div>
           {% endif %}
         </div>
 
-        <!-- Photo -->
+        <!-- Child Photo Upload -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.photo.id_for_label }}">📷 Child Photo *</label>
-          {{ form.photo }}
-          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">
-            JPEG, PNG, WebP or GIF. Max 5 MB.
+          <label class="form-label" for="{{ form.photo.id_for_label }}">
+            Child Photograph <span class="req">*</span>
+          </label>
+          <div class="p-3 border rounded-3 bg-light" style="border: 1px dashed var(--primary-border) !important; background: var(--bg) !important;">
+            {{ form.photo }}
+            <div class="form-hint mt-2">
+              Formats: JPEG, PNG, WebP or GIF. Maximum file size: 5 MB.
+            </div>
+            <!-- Photo live preview container -->
+            <div id="photoPreviewContainer" class="mt-3" style="display:none;">
+              <div class="d-flex align-items-center gap-3">
+                <img id="photoPreview" src="" alt="Preview" class="child-photo-card" style="width:100px;height:100px;">
+                <div>
+                  <span class="badge-chip badge-success mb-1">
+                    <i data-lucide="check"></i> Photo Selected
+                  </span>
+                  <div class="text-secondary" style="font-size:0.8125rem;">Ready to upload</div>
+                </div>
+              </div>
+            </div>
           </div>
           {% if form.photo.errors %}
-            <div class="invalid-feedback d-block">{{ form.photo.errors.0 }}</div>
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.photo.errors.0 }}</div>
           {% endif %}
-          <!-- Photo preview -->
-          <div id="photoPreviewContainer" class="mt-2" style="display:none;">
-            <img id="photoPreview" src="" alt="Preview"
-                 style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:3px solid var(--saffron);">
-          </div>
         </div>
 
-        <!-- Age & Gender Row -->
+        <!-- Age & Gender Grid -->
         <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label" for="{{ form.age.id_for_label }}">🎂 Age (optional)</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.age.id_for_label }}">
+              Age (Years)
+            </label>
             {{ form.age }}
+            {% if form.age.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.age.errors.0 }}</div>
+            {% endif %}
           </div>
-          <div class="col-md-6">
-            <label class="form-label" for="{{ form.gender.id_for_label }}">⚧ Gender (optional)</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.gender.id_for_label }}">
+              Gender
+            </label>
             {{ form.gender }}
+            {% if form.gender.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.gender.errors.0 }}</div>
+            {% endif %}
           </div>
         </div>
 
         <!-- Notes -->
         <div class="mb-4">
-          <label class="form-label" for="{{ form.notes.id_for_label }}">📝 Notes (optional)</label>
+          <label class="form-label" for="{{ form.notes.id_for_label }}">
+            Special Notes / Medical / Allergies
+          </label>
           {{ form.notes }}
+          <div class="form-hint">Optional remarks visible on the child's profile page.</div>
+          {% if form.notes.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.notes.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <!-- Non-field errors -->
         {% if form.non_field_errors %}
-        <div class="alert-danger-custom mb-3">
-          {{ form.non_field_errors.0 }}
+        <div class="toast-item toast-error mb-4" style="animation:none;width:100%;">
+          <i data-lucide="alert-circle" style="color:var(--danger);"></i>
+          <span style="color:var(--danger-text);font-weight:600;">{{ form.non_field_errors.0 }}</span>
         </div>
         {% endif %}
 
-        <div class="d-flex gap-3">
-          <button type="submit" class="btn btn-saffron btn-xl flex-grow-1" id="submitBtn">
-            ✅ Register Child
+        <!-- Form Actions -->
+        <div class="d-flex gap-3 pt-2">
+          <button type="submit" class="btn btn-primary btn-lg flex-grow-1 justify-content-center" id="submitBtn">
+            <i data-lucide="check"></i>
+            <span>Register Child</span>
           </button>
-          <a href="{% url 'child_list' %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+          <a href="{% url 'child_list' %}" class="btn btn-secondary btn-lg">
+            <span>Cancel</span>
+          </a>
         </div>
       </form>
     </div>
@@ -106,24 +156,30 @@
 
 {% block extra_js %}
 <script>
-// Photo preview
-document.querySelector('input[type=file]').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      document.getElementById('photoPreview').src = ev.target.result;
-      document.getElementById('photoPreviewContainer').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  }
-});
+// Photo live preview handler
+const fileInput = document.querySelector('input[type=file]');
+if (fileInput) {
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        document.getElementById('photoPreview').src = ev.target.result;
+        document.getElementById('photoPreviewContainer').style.display = 'block';
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
-// Prevent double submit
+// Prevent double submission
 document.getElementById('registrationForm').addEventListener('submit', function() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Registering...';
+  btn.innerHTML = '<span class="spinner-saas me-2"></span> Registering...';
 });
 </script>
 {% endblock %}

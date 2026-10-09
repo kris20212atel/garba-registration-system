@@ -1,81 +1,108 @@
 {% extends 'base.html' %}
-{% block title %}Search — Navratri EMS{% endblock %}
+{% block title %}Search Directory — Navratri EMS{% endblock %}
+{% block page_heading %}Search Directory{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:900px;">
-  <div class="page-header">
-    <h1>🔍 Search Children</h1>
-    <p class="subtitle">Search by Registration ID, Name, or Phone number</p>
+<div class="mx-auto" style="max-width: 900px;">
+  <!-- Header -->
+  <div class="mb-4">
+    <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;">Search Children</h1>
+    <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Instant directory lookup across Registration ID, child name, or guardian contact number.</p>
   </div>
 
+  <!-- Search Input Bar -->
   <div class="card mb-4">
-    <div class="card-body p-4">
-      <form method="get" action="{% url 'search' %}" class="search-bar">
-        <div class="d-flex gap-3">
+    <div class="card-body-clean p-4">
+      <form method="get" action="{% url 'search' %}">
+        <div class="verify-input-group mb-2">
+          <i data-lucide="search" class="verify-input-icon"></i>
           <input
             type="text"
             name="q"
             id="searchInput"
             value="{{ query }}"
-            placeholder="Search by ID (NAV001), name, or phone..."
-            class="form-control form-control-lg"
+            placeholder="Search by ID (e.g. 1), child name (e.g. Rahul), or phone..."
+            class="form-control verify-input"
+            style="font-size:1.25rem !important;padding:0.85rem 1rem 0.85rem 3.5rem !important;"
             autofocus
             autocomplete="off"
+            spellcheck="false"
           >
-          <button type="submit" class="btn btn-primary btn-lg" style="white-space:nowrap;">🔍 Search</button>
         </div>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem;">
-          ℹ️ Phone numbers may return multiple results if multiple children share the same number.
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-1">
+          <div class="form-hint mb-0">
+            Tip: You can search partial names or digits. Multiple family members may match one phone number.
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="search"></i>
+            <span>Search Records</span>
+          </button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Results Section -->
   {% if query %}
     {% if results %}
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <strong style="color:var(--purple-dark);">{{ results|length }} result{{ results|length|pluralize }} found for "{{ query }}"</strong>
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-semibold text-primary" style="font-size:0.9375rem;">Results for "{{ query }}"</span>
+        <span class="badge-chip badge-purple">{{ results|length }} match{{ results|length|pluralize:"es" }}</span>
+      </div>
     </div>
-    <div class="card">
-      <div class="card-body p-0">
+
+    <div class="card mb-4">
+      <div class="card-body-clean p-0">
         <div class="table-responsive">
-          <table class="table-navratri">
+          <table class="saas-table">
             <thead>
               <tr>
-                <th>Photo</th>
+                <th>Child</th>
                 <th>Registration ID</th>
-                <th>Child Name</th>
-                <th>Guardian</th>
-                <th>Phone</th>
+                <th>Parent / Guardian</th>
+                <th>Contact Phone</th>
                 <th>Age</th>
-                <th>Actions</th>
+                <th class="text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for child in results %}
               <tr>
                 <td>
-                  {% if child.photo %}
-                  <img src="{{ child.photo.url }}" alt="{{ child.name }}"
-                       style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
+                  <div class="d-flex align-items-center gap-2">
+                    {% if child.photo %}
+                    <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-avatar-sm">
+                    {% else %}
+                    <div class="child-avatar-placeholder-sm">{{ child.name|make_list|first|upper }}</div>
+                    {% endif %}
+                    <div>
+                      <a href="{% url 'child_profile' child.pk %}" class="fw-semibold text-primary">
+                        {{ child.name }}
+                      </a>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="id-pill">{{ child.registration_id }}</span>
+                </td>
+                <td class="text-secondary">{{ child.guardian_name }}</td>
+                <td class="text-secondary">{{ child.phone }}</td>
+                <td>
+                  {% if child.age %}
+                  <span class="badge-chip badge-slate">{{ child.age }} yrs</span>
                   {% else %}
-                  <div style="width:50px;height:50px;background:var(--purple-lite);border-radius:8px;
-                              display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👶</div>
+                  <span class="text-muted">—</span>
                   {% endif %}
                 </td>
-                <td>
-                  <span class="fw-700" style="color:var(--purple);font-size:1rem;letter-spacing:1px;">
-                    {{ child.registration_id }}
-                  </span>
-                </td>
-                <td><strong>{{ child.name }}</strong></td>
-                <td>{{ child.guardian_name }}</td>
-                <td>{{ child.phone }}</td>
-                <td>{{ child.age|default:"—" }}</td>
-                <td>
-                  <div class="d-flex gap-1 flex-wrap">
-                    <a href="{% url 'child_profile' child.pk %}" class="btn btn-sm btn-primary">View</a>
-                    <a href="{% url 'entry' %}?id={{ child.registration_id }}" class="btn btn-sm btn-success-nav">🚪 Verify</a>
+                <td class="text-end">
+                  <div class="d-inline-flex align-items-center gap-1">
+                    <a href="{% url 'entry' %}?id={{ child.registration_id }}" class="btn btn-primary btn-sm" title="Verify Entry / Gift">
+                      <i data-lucide="scan-line"></i> Verify
+                    </a>
+                    <a href="{% url 'child_profile' child.pk %}" class="btn btn-secondary btn-sm" title="View Profile">
+                      <i data-lucide="user"></i> View
+                    </a>
                   </div>
                 </td>
               </tr>
@@ -85,21 +112,34 @@
         </div>
       </div>
     </div>
+
     {% else %}
+    <!-- No Results Found -->
     <div class="card p-5 text-center">
-      <div style="font-size:4rem;">🔍</div>
-      <h4 class="fw-700 mt-3" style="color:var(--purple-dark);">No results found</h4>
-      <p style="color:var(--text-muted);">No children match "{{ query }}".</p>
-      <a href="{% url 'register_child' %}" class="btn btn-saffron btn-lg mx-auto" style="display:inline-flex;">
-        ➕ Register This Child
-      </a>
+      <div class="empty-state py-4">
+        <div class="empty-state-icon">
+          <i data-lucide="search-x"></i>
+        </div>
+        <div class="empty-state-title">No children found matching "{{ query }}"</div>
+        <div class="empty-state-desc">Check for typos, search by phone number instead, or register a new child record.</div>
+        <a href="{% url 'register_child' %}" class="btn btn-primary">
+          <i data-lucide="user-plus"></i>
+          <span>Register This Child</span>
+        </a>
+      </div>
     </div>
     {% endif %}
+
   {% else %}
+  <!-- Empty Search Initial State -->
   <div class="card p-5 text-center">
-    <div style="font-size:4rem;">🔍</div>
-    <h4 class="fw-700 mt-3" style="color:var(--purple-dark);">Enter a search term above</h4>
-    <p style="color:var(--text-muted);">Search by Registration ID, child name, or phone number.</p>
+    <div class="empty-state py-4">
+      <div class="empty-state-icon">
+        <i data-lucide="search"></i>
+      </div>
+      <div class="empty-state-title">Type a search term above</div>
+      <div class="empty-state-desc">Search by child name, registration ID number, or parent mobile number to locate records quickly.</div>
+    </div>
   </div>
   {% endif %}
 </div>

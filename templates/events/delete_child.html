@@ -1,28 +1,36 @@
 {% extends 'base.html' %}
 {% block title %}Delete {{ child.registration_id }} — Navratri EMS{% endblock %}
+{% block page_heading %}Delete Child{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:500px;">
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--red-dark),var(--red));">
-      ⚠️ Confirm Deletion
-    </div>
-    <div class="card-body p-4 text-center">
-      {% if child.photo %}
-      <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-photo mx-auto mb-3">
-      {% endif %}
-      <div class="reg-id-display mb-2">{{ child.registration_id }}</div>
-      <h4 class="fw-700">{{ child.name }}</h4>
-      <p style="color:var(--text-muted);">{{ child.guardian_name }} &bull; {{ child.phone }}</p>
-
-      <div class="alert-danger-custom text-start mb-4">
-        ⚠️ <strong>This action cannot be undone.</strong> All attendance and gift records for this child will also be deleted.
+<div class="mx-auto" style="max-width: 520px;">
+  <div class="card mb-4 text-center" style="border-color:#FECACA;">
+    <div class="card-body-clean p-5">
+      <div class="stat-icon-badge badge-tint-red mx-auto mb-3" style="width:56px;height:56px;">
+        <i data-lucide="alert-triangle" style="width:30px;height:30px;"></i>
       </div>
 
-      <form method="post" class="d-flex gap-3 justify-content-center">
+      <h2 class="mb-1" style="font-size:1.4rem;font-weight:700;">Delete Child Record?</h2>
+      <p class="text-secondary mb-4" style="font-size:0.875rem;">
+        You are about to remove <strong>{{ child.name }}</strong> (ID: {{ child.registration_id }}) from the database.
+      </p>
+
+      <div class="p-3 rounded-3 border mb-4 text-start" style="background:#FEF2F2;border-color:#FEE2E2 !important;font-size:0.8125rem;color:#991B1B;">
+        <div class="fw-bold mb-1">
+          <i data-lucide="alert-circle" style="width:14px;height:14px;display:inline;"></i> Irreversible Action
+        </div>
+        <div>All attendance and daily gift records associated with this child will also be permanently deleted.</div>
+      </div>
+
+      <form method="post" class="d-flex gap-2 justify-content-center">
         {% csrf_token %}
-        <button type="submit" class="btn btn-danger-nav btn-xl">🗑️ Yes, Delete</button>
-        <a href="{% url 'child_profile' child.pk %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+        <button type="submit" class="btn btn-danger btn-lg flex-grow-1 justify-content-center">
+          <i data-lucide="trash-2"></i>
+          <span>Confirm Delete</span>
+        </button>
+        <a href="{% url 'child_profile' child.pk %}" class="btn btn-secondary btn-lg">
+          <span>Cancel</span>
+        </a>
       </form>
     </div>
   </div>

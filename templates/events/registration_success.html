@@ -1,51 +1,71 @@
 {% extends 'base.html' %}
-{% block title %}Registration Successful — Navratri EMS{% endblock %}
+{% block title %}Registration Confirmed — Navratri EMS{% endblock %}
+{% block page_heading %}Registration Confirmed{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:600px;">
-  <div class="text-center fade-in">
-    <!-- Success Icon -->
-    <div style="font-size:5rem;margin-bottom:1rem;">🎉</div>
-    <h1 class="fw-800" style="color:var(--green-dark);">Registration Successful!</h1>
-    <p style="color:var(--text-muted);">The child has been registered for Navratri {{ event_config.name }}.</p>
-  </div>
-
-  <div class="card mt-4 fade-in">
-    <div class="card-header text-center" style="background:linear-gradient(135deg,var(--green-dark),var(--green));">
-      ✅ Registration Confirmation
-    </div>
-    <div class="card-body p-4 text-center">
-      <!-- Registration ID Big Display -->
-      <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:0.5rem;">REGISTRATION ID</div>
-      <div class="reg-id-display mb-4">{{ child.registration_id }}</div>
-
-      <!-- Photo -->
-      {% if child.photo %}
-      <img src="{{ child.photo.url }}" alt="{{ child.name }}"
-           class="child-photo-lg mb-3">
-      {% else %}
-      <div class="child-photo-placeholder mx-auto mb-3" style="width:160px;height:160px;border-radius:16px;">👶</div>
-      {% endif %}
-
-      <!-- Details -->
-      <h2 class="fw-800 mb-1" style="color:var(--purple-dark);">{{ child.name }}</h2>
-      <p style="color:var(--text-muted);">
-        👨‍👩‍👧 {{ child.guardian_name }}<br>
-        📞 {{ child.phone }}
-        {% if child.age %} &bull; Age {{ child.age }}{% endif %}
-      </p>
-
-      <hr style="border-color:var(--border);">
-
-      <div class="alert-info-custom text-start mb-3">
-        📌 Please note the Registration ID: <strong>{{ child.registration_id }}</strong><br>
-        This ID will be used for entry and gift verification every day.
+<div class="mx-auto" style="max-width: 620px;">
+  <!-- Success Confirmation Card -->
+  <div class="card mb-4 text-center">
+    <div class="card-body-clean p-5">
+      <div class="stat-icon-badge badge-tint-green mx-auto mb-3" style="width:56px;height:56px;">
+        <i data-lucide="check-circle" style="width:32px;height:32px;"></i>
       </div>
 
-      <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a href="{% url 'id_card' child.pk %}" class="btn btn-saffron btn-lg">🪪 Download ID Card</a>
-        <a href="{% url 'register_child' %}" class="btn btn-primary btn-lg">➕ Register Another</a>
-        <a href="{% url 'entry' %}" class="btn btn-success-nav btn-lg">🚪 Entry Page</a>
+      <h1 class="mb-1" style="font-size:1.6rem;font-weight:700;">Registration Successful!</h1>
+      <p class="text-secondary mb-4" style="font-size:0.9375rem;">
+        The child has been registered into the Navratri EMS directory.
+      </p>
+
+      <!-- Child Profile Snapshot -->
+      <div class="p-4 rounded-3 border mb-4 text-start" style="background:var(--bg);border-color:var(--primary-border) !important;">
+        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style="border-color:var(--primary-border) !important;">
+          {% if child.photo %}
+          <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-avatar-sm" style="width:56px;height:56px;border-radius:var(--radius-lg);">
+          {% else %}
+          <div class="child-avatar-placeholder-sm" style="width:56px;height:56px;border-radius:var(--radius-lg);font-size:1.25rem;">
+            {{ child.name|make_list|first|upper }}
+          </div>
+          {% endif %}
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="id-pill" style="font-size:1rem;">{{ child.registration_id }}</span>
+            </div>
+            <h3 class="mb-0" style="font-size:1.15rem;font-weight:700;">{{ child.name }}</h3>
+          </div>
+        </div>
+
+        <div class="row g-2 text-secondary" style="font-size:0.875rem;">
+          <div class="col-12 col-sm-6 d-flex align-items-center gap-2">
+            <i data-lucide="users" style="width:16px;height:16px;color:var(--text-muted);"></i>
+            <span><strong>Guardian:</strong> {{ child.guardian_name }}</span>
+          </div>
+          <div class="col-12 col-sm-6 d-flex align-items-center gap-2">
+            <i data-lucide="phone" style="width:16px;height:16px;color:var(--text-muted);"></i>
+            <span><strong>Phone:</strong> {{ child.phone }}</span>
+          </div>
+          {% if child.age %}
+          <div class="col-12 col-sm-6 d-flex align-items-center gap-2">
+            <i data-lucide="cake" style="width:16px;height:16px;color:var(--text-muted);"></i>
+            <span><strong>Age:</strong> {{ child.age }} years</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+        <a href="{% url 'id_card' child.pk %}" class="btn btn-primary btn-lg justify-content-center">
+          <i data-lucide="printer"></i>
+          <span>Download & Print ID Badge</span>
+        </a>
+        <a href="{% url 'register_child' %}" class="btn btn-secondary btn-lg justify-content-center">
+          <i data-lucide="user-plus"></i>
+          <span>Register Another</span>
+        </a>
+        <a href="{% url 'entry' %}" class="btn btn-secondary btn-lg justify-content-center">
+          <i data-lucide="scan-line"></i>
+          <span>Verify Entry</span>
+        </a>
       </div>
     </div>
   </div>

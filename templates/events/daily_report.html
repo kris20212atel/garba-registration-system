@@ -1,118 +1,146 @@
 {% extends 'base.html' %}
-{% block title %}Daily Report — Day {{ selected_day }} — Navratri EMS{% endblock %}
+{% block title %}Daily Attendance & Gift Report — Navratri EMS{% endblock %}
+{% block page_heading %}Daily Report{% endblock %}
 
 {% block content %}
-<div class="page-wrapper">
-  <div class="page-header">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
-        <h1>📋 Daily Report</h1>
-        <p class="subtitle">Attendance & gift records for <strong>Day {{ selected_day }}</strong></p>
-      </div>
-      <div class="d-flex gap-2 flex-wrap">
-        <a href="{% url 'export_data' %}?type=today_attendance" class="btn btn-outline-purple btn-lg">
-          📥 Export Entries
-        </a>
-        <a href="{% url 'export_data' %}?type=today_gifts" class="btn btn-saffron btn-lg">
-          📥 Export Gifts
-        </a>
-      </div>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <h1 class="mb-0" style="font-size:1.75rem;font-weight:700;">Daily Event Report</h1>
+      <span class="badge-chip badge-purple">Day {{ selected_day }}</span>
     </div>
+    <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Attendance logs and gift distribution tracking for Day {{ selected_day }}.</p>
   </div>
 
-  <!-- Day Selector -->
-  <div class="card mb-4 p-3">
-    <div class="d-flex align-items-center gap-3 flex-wrap">
-      <span class="fw-700" style="color:var(--purple-dark);">Select Day:</span>
-      <form method="get" action="{% url 'daily_report' %}" class="d-flex gap-2 align-items-center">
-        <select name="day" class="form-select" style="width:auto;" onchange="this.form.submit()">
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <a href="{% url 'export_data' %}?type=today_attendance" class="btn btn-secondary">
+      <i data-lucide="file-spreadsheet"></i>
+      <span>Export Entries</span>
+    </a>
+    <a href="{% url 'export_data' %}?type=today_gifts" class="btn btn-secondary">
+      <i data-lucide="gift"></i>
+      <span>Export Gifts</span>
+    </a>
+  </div>
+</div>
+
+<!-- Day Selector & Metric Overview Bar -->
+<div class="card mb-4">
+  <div class="card-body-clean p-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+      <!-- Day select -->
+      <form method="get" action="{% url 'daily_report' %}" class="d-flex align-items-center gap-2">
+        <label for="reportDaySelect" class="form-label mb-0 fw-semibold text-secondary" style="white-space:nowrap;">
+          Select Event Day:
+        </label>
+        <select name="day" id="reportDaySelect" class="form-select" style="width:auto;font-weight:600;" onchange="this.form.submit()">
           {% for d in total_days %}
           <option value="{{ d }}" {% if d == selected_day %}selected{% endif %}>
-            Day {{ d }}{% if d == event_config.current_day %} (Today){% endif %}
+            Day {{ d }}{% if d == event_config.current_day %} (Current Live Day){% endif %}
           </option>
           {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary">View</button>
+        <button type="submit" class="btn btn-secondary btn-sm">
+          <span>View</span>
+        </button>
       </form>
 
-      <!-- Summary badges -->
-      <div class="d-flex gap-2 ms-auto flex-wrap">
-        <span class="status-badge status-entered">🚪 {{ entries_count }} Entries</span>
-        <span class="status-badge status-given">🎁 {{ gifts_count }} Gifts</span>
+      <!-- Key metric pills -->
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <div class="badge-chip badge-success py-2 px-3">
+          <i data-lucide="log-in"></i>
+          <span><strong>{{ entries_count }}</strong> Entries Logged</span>
+        </div>
+        <div class="badge-chip badge-warning py-2 px-3">
+          <i data-lucide="gift"></i>
+          <span><strong>{{ gifts_count }}</strong> Gifts Distributed</span>
+        </div>
       </div>
     </div>
   </div>
-
-  {% if report_rows %}
-  <div class="card">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table-navratri">
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>ID</th>
-              <th>Child Name</th>
-              <th>Guardian</th>
-              <th>Phone</th>
-              <th>Entry Time</th>
-              <th>Gift Time</th>
-              <th>Gift Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in report_rows %}
-            <tr>
-              <td>
-                {% if row.child.photo %}
-                <img src="{{ row.child.photo.url }}" alt="{{ row.child.name }}"
-                     style="width:45px;height:45px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
-                {% else %}
-                <div style="width:45px;height:45px;background:var(--purple-lite);border-radius:8px;
-                            display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👶</div>
-                {% endif %}
-              </td>
-              <td>
-                <a href="{% url 'child_profile' row.child.pk %}" class="fw-700" style="color:var(--purple);">
-                  {{ row.child.registration_id }}
-                </a>
-              </td>
-              <td><strong>{{ row.child.name }}</strong></td>
-              <td style="font-size:0.85rem;color:var(--text-muted);">{{ row.child.guardian_name }}</td>
-              <td style="font-size:0.85rem;">{{ row.child.phone }}</td>
-              <td>
-                {% if row.attendance %}
-                <span class="status-badge status-entered">✅ {{ row.attendance.entry_time|time:"h:i A" }}</span>
-                {% else %}
-                <span class="status-badge status-not-entered">— Not Entered</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if row.gift %}
-                <span class="status-badge status-given">🎁 {{ row.gift.gift_time|time:"h:i A" }}</span>
-                {% else %}
-                <span style="color:var(--text-muted);">—</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if row.gift %}
-                <span class="status-badge status-given">✅ Given</span>
-                {% else %}
-                <span class="status-badge status-not-given">❌ Not Given</span>
-                {% endif %}
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <div class="card p-5 text-center">
-    <div style="font-size:4rem;">📋</div>
-    <h4 class="fw-700 mt-3">No data for Day {{ selected_day }}</h4>
-  </div>
-  {% endif %}
 </div>
+
+<!-- Report Table -->
+{% if report_rows %}
+<div class="card mb-4">
+  <div class="card-body-clean p-0">
+    <div class="table-responsive">
+      <table class="saas-table">
+        <thead>
+          <tr>
+            <th>Child Photo & Name</th>
+            <th>ID</th>
+            <th>Guardian</th>
+            <th>Contact Phone</th>
+            <th>Entry Status & Time</th>
+            <th>Gift Status & Time</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report_rows %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if row.child.photo %}
+                <img src="{{ row.child.photo.url }}" alt="{{ row.child.name }}" class="child-avatar-sm">
+                {% else %}
+                <div class="child-avatar-placeholder-sm">{{ row.child.name|make_list|first|upper }}</div>
+                {% endif %}
+                <a href="{% url 'child_profile' row.child.pk %}" class="fw-semibold text-primary">
+                  {{ row.child.name }}
+                </a>
+              </div>
+            </td>
+            <td>
+              <span class="id-pill">{{ row.child.registration_id }}</span>
+            </td>
+            <td class="text-secondary">{{ row.child.guardian_name }}</td>
+            <td class="text-secondary">{{ row.child.phone }}</td>
+            <td>
+              {% if row.attendance %}
+              <span class="badge-chip badge-success">
+                <i data-lucide="check"></i> {{ row.attendance.entry_time|time:"h:i A" }}
+              </span>
+              {% else %}
+              <span class="badge-chip badge-slate">
+                <i data-lucide="clock"></i> Not Entered
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.gift %}
+              <span class="badge-chip badge-warning">
+                <i data-lucide="gift"></i> {{ row.gift.gift_time|time:"h:i A" }}
+              </span>
+              {% else %}
+              <span class="badge-chip badge-slate">
+                <i data-lucide="x"></i> Not Given
+              </span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'entry' %}?id={{ row.child.registration_id }}" class="btn btn-secondary btn-sm" title="Verify Child">
+                <i data-lucide="scan-line"></i> Verify
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="card p-5 text-center">
+  <div class="empty-state py-4">
+    <div class="empty-state-icon">
+      <i data-lucide="file-text"></i>
+    </div>
+    <div class="empty-state-title">No report data for Day {{ selected_day }}</div>
+    <div class="empty-state-desc">No children registered yet in the database.</div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

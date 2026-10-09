@@ -1,77 +1,126 @@
 {% extends 'base.html' %}
 {% block title %}Export Data — Navratri EMS{% endblock %}
+{% block page_heading %}Export Data{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:700px;">
-  <div class="page-header">
-    <h1>📤 Export Data</h1>
-    <p class="subtitle">Download Excel files of your event data</p>
+<div class="mx-auto" style="max-width: 960px;">
+  <div class="mb-4">
+    <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;">Export Event Data</h1>
+    <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Download formatted Microsoft Excel (.xlsx) spreadsheets of registrations, attendance, and gift records.</p>
   </div>
 
-  <div class="row g-3">
-    <!-- Children -->
-    <div class="col-md-6">
-      <div class="card p-4 text-center h-100">
-        <div style="font-size:2.5rem;">👥</div>
-        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">All Registered Children</h5>
-        <p style="font-size:0.85rem;color:var(--text-muted);">Complete list with all registration details</p>
-        <a href="{% url 'export_data' %}?type=children" class="btn btn-primary btn-lg mt-auto">
-          📥 Download
-        </a>
+  <div class="row g-3 mb-4">
+    <!-- Card 1: Registered Children -->
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="stat-icon-badge badge-tint-purple mb-3">
+            <i data-lucide="users"></i>
+          </div>
+          <h3 class="mb-1" style="font-size:1.15rem;font-weight:700;">Registered Children</h3>
+          <p class="text-secondary mb-3" style="font-size:0.875rem;">
+            Full directory export with parent names, phone numbers, ages, and timestamps.
+          </p>
+        </div>
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between" style="border-color:var(--border-subtle) !important;">
+          <span class="badge-chip badge-slate">.XLSX Format</span>
+          <a href="{% url 'export_data' %}?type=children" class="btn btn-primary btn-sm">
+            <i data-lucide="download"></i> Download
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- Today Attendance -->
-    <div class="col-md-6">
-      <div class="card p-4 text-center h-100">
-        <div style="font-size:2.5rem;">🚪</div>
-        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Today's Attendance</h5>
-        <p style="font-size:0.85rem;color:var(--text-muted);">Day {{ event_config.current_day }} entry records</p>
-        <a href="{% url 'export_data' %}?type=today_attendance" class="btn btn-success-nav btn-lg mt-auto">
-          📥 Download Day {{ event_config.current_day }}
-        </a>
+    <!-- Card 2: Today's Attendance -->
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="stat-icon-badge badge-tint-green mb-3">
+            <i data-lucide="log-in"></i>
+          </div>
+          <h3 class="mb-1" style="font-size:1.15rem;font-weight:700;">Today's Entries</h3>
+          <p class="text-secondary mb-3" style="font-size:0.875rem;">
+            Day {{ event_config.current_day }} entry verification logs with exact check-in timestamps.
+          </p>
+        </div>
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between" style="border-color:var(--border-subtle) !important;">
+          <span class="badge-chip badge-slate">Day {{ event_config.current_day }}</span>
+          <a href="{% url 'export_data' %}?type=today_attendance" class="btn btn-secondary btn-sm">
+            <i data-lucide="download"></i> Download
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- Today Gifts -->
-    <div class="col-md-6">
-      <div class="card p-4 text-center h-100">
-        <div style="font-size:2.5rem;">🎁</div>
-        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Today's Gift Distribution</h5>
-        <p style="font-size:0.85rem;color:var(--text-muted);">Day {{ event_config.current_day }} gift records</p>
-        <a href="{% url 'export_data' %}?type=today_gifts" class="btn btn-saffron btn-lg mt-auto">
-          📥 Download Day {{ event_config.current_day }}
-        </a>
+    <!-- Card 3: Today's Gifts -->
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="stat-icon-badge badge-tint-amber mb-3">
+            <i data-lucide="gift"></i>
+          </div>
+          <h3 class="mb-1" style="font-size:1.15rem;font-weight:700;">Today's Gifts</h3>
+          <p class="text-secondary mb-3" style="font-size:0.875rem;">
+            Day {{ event_config.current_day }} gift distribution records and volunteer operator tags.
+          </p>
+        </div>
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between" style="border-color:var(--border-subtle) !important;">
+          <span class="badge-chip badge-slate">Day {{ event_config.current_day }}</span>
+          <a href="{% url 'export_data' %}?type=today_gifts" class="btn btn-secondary btn-sm">
+            <i data-lucide="download"></i> Download
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- All Attendance -->
-    <div class="col-md-6">
-      <div class="card p-4 text-center h-100">
-        <div style="font-size:2.5rem;">📊</div>
-        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Complete Attendance History</h5>
-        <p style="font-size:0.85rem;color:var(--text-muted);">All 20 days of entry records</p>
-        <a href="{% url 'export_data' %}?type=all_attendance" class="btn btn-primary btn-lg mt-auto">
-          📥 Download All Days
-        </a>
+    <!-- Card 4: All Attendance (Full Event) -->
+    <div class="col-12 col-md-6">
+      <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="stat-icon-badge badge-tint-blue mb-3">
+            <i data-lucide="calendar"></i>
+          </div>
+          <h3 class="mb-1" style="font-size:1.15rem;font-weight:700;">Complete Event Attendance</h3>
+          <p class="text-secondary mb-3" style="font-size:0.875rem;">
+            Aggregated entry logs spanning all {{ event_config.total_days }} event days.
+          </p>
+        </div>
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between" style="border-color:var(--border-subtle) !important;">
+          <span class="badge-chip badge-slate">All {{ event_config.total_days }} Days</span>
+          <a href="{% url 'export_data' %}?type=all_attendance" class="btn btn-secondary btn-sm">
+            <i data-lucide="download"></i> Download All
+          </a>
+        </div>
       </div>
     </div>
 
-    <!-- All Gifts -->
-    <div class="col-md-6">
-      <div class="card p-4 text-center h-100">
-        <div style="font-size:2.5rem;">🎊</div>
-        <h5 class="fw-700 mt-2 mb-1" style="color:var(--purple-dark);">Complete Gift History</h5>
-        <p style="font-size:0.85rem;color:var(--text-muted);">All 20 days of gift distribution records</p>
-        <a href="{% url 'export_data' %}?type=all_gifts" class="btn btn-saffron btn-lg mt-auto">
-          📥 Download All Days
-        </a>
+    <!-- Card 5: All Gifts (Full Event) -->
+    <div class="col-12 col-md-6">
+      <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+        <div>
+          <div class="stat-icon-badge badge-tint-amber mb-3">
+            <i data-lucide="award"></i>
+          </div>
+          <h3 class="mb-1" style="font-size:1.15rem;font-weight:700;">Complete Gift Distribution Log</h3>
+          <p class="text-secondary mb-3" style="font-size:0.875rem;">
+            Complete history of all gift disbursements across the entire festival duration.
+          </p>
+        </div>
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between" style="border-color:var(--border-subtle) !important;">
+          <span class="badge-chip badge-slate">All {{ event_config.total_days }} Days</span>
+          <a href="{% url 'export_data' %}?type=all_gifts" class="btn btn-secondary btn-sm">
+            <i data-lucide="download"></i> Download All
+          </a>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="alert-info-custom mt-4">
-    ℹ️ All exports are in Excel (.xlsx) format with colored headers. Open in Microsoft Excel, Google Sheets, or LibreOffice Calc.
+  <div class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background:var(--bg);border-color:var(--primary-border) !important;">
+    <i data-lucide="info" style="color:var(--primary-accent);width:20px;height:20px;flex-shrink:0;"></i>
+    <div class="text-secondary" style="font-size:0.8125rem;">
+      Spreadsheets include formatted headers and timestamps compatible with Microsoft Excel, Google Sheets, and Apple Numbers.
+    </div>
   </div>
 </div>
 {% endblock %}

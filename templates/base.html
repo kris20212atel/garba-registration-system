@@ -4,137 +4,312 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Navratri Event Management{% endblock %}</title>
-  <meta name="description" content="Navratri Child Gift & Entry Management System - Register children, track attendance and gift distribution over 20 days.">
+  <title>{% block title %}Navratri EMS — Event Management System{% endblock %}</title>
+  <meta name="description" content="Navratri Child Gift & Entry Management System - Enterprise-grade registration, attendance verification, and gift distribution tracking.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪔</text></svg>">
 
-  <!-- Bootstrap 5 -->
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 Grid & Utilities -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="{% static 'css/navratri.css' %}">
+  <!-- Lucide Icons -->
+  <!-- Immediate Dark/Light Theme Initialization to prevent FOUC -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+
+  <!-- Custom Modern SaaS Styles -->
+  <link rel="stylesheet" href="{% static 'css/navratri.css' %}?v=2026.4">
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
 {% if user.is_authenticated %}
-<!-- ── Navbar ── -->
-<nav class="navbar navbar-expand-lg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'dashboard' %}">
-      <span class="brand-icon">🪔</span>
-      <span>
-        Navratri EMS
-        <span class="brand-subtitle">Event Management System</span>
-      </span>
+<div class="app-container" id="appContainer">
+
+  <!-- Mobile Drawer Backdrop Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <!-- ── Left Sidebar ── -->
+  <aside class="app-sidebar" id="appSidebar">
+    <!-- Brand -->
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+      <div class="brand-emblem">
+        <i data-lucide="sparkles"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Navratri EMS</span>
+        <span class="brand-tag">Event Management System</span>
+      </div>
     </a>
 
-    <!-- Day Badge -->
-    {% if event_config %}
-    <span class="day-badge d-none d-md-inline-flex">
-      Day {{ event_config.current_day }} / {{ event_config.total_days }}
-    </span>
-    {% endif %}
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <!-- Overview -->
+      <div>
+        <div class="nav-group-title">Overview</div>
+        <ul class="nav-list">
+          <li>
+            <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+              <i data-lucide="layout-dashboard"></i>
+              <span class="nav-text">Dashboard</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-    <button class="navbar-toggler ms-auto me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <!-- Management -->
+      <div>
+        <div class="nav-group-title">Management</div>
+        <ul class="nav-list">
+          <li>
+            <a href="{% url 'entry' %}" class="nav-link-item {% if 'entry' in request.resolver_match.url_name %}active{% endif %}">
+              <i data-lucide="scan-line"></i>
+              <span class="nav-text">Entry / Gift Verification</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'register_child' %}" class="nav-link-item {% if request.resolver_match.url_name == 'register_child' %}active{% endif %}">
+              <i data-lucide="user-plus"></i>
+              <span class="nav-text">Register Child</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'child_list' %}" class="nav-link-item {% if request.resolver_match.url_name == 'child_list' or request.resolver_match.url_name == 'child_profile' or request.resolver_match.url_name == 'edit_child' %}active{% endif %}">
+              <i data-lucide="users"></i>
+              <span class="nav-text">Children Directory</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'search' %}" class="nav-link-item {% if request.resolver_match.url_name == 'search' %}active{% endif %}">
+              <i data-lucide="search"></i>
+              <span class="nav-text">Search</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-    <div class="collapse navbar-collapse" id="navContent">
-      <ul class="navbar-nav me-auto ms-3">
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-             href="{% url 'dashboard' %}">📊 Dashboard</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if 'entry' in request.resolver_match.url_name %}active{% endif %}"
-             href="{% url 'entry' %}">🚪 Entry / Gift</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'register_child' %}active{% endif %}"
-             href="{% url 'register_child' %}">➕ Register</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'child_list' %}active{% endif %}"
-             href="{% url 'child_list' %}">👥 Children</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'search' %}active{% endif %}"
-             href="{% url 'search' %}">🔍 Search</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}"
-             href="{% url 'daily_report' %}">📋 Reports</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'export_data' %}active{% endif %}"
-             href="{% url 'export_data' %}">📤 Export</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if request.resolver_match.url_name == 'event_settings' %}active{% endif %}"
-             href="{% url 'event_settings' %}">⚙️ Settings</a>
-        </li>
-      </ul>
+      <!-- Analytics -->
+      <div>
+        <div class="nav-group-title">Analytics</div>
+        <ul class="nav-list">
+          <li>
+            <a href="{% url 'daily_report' %}" class="nav-link-item {% if 'report' in request.resolver_match.url_name %}active{% endif %}">
+              <i data-lucide="bar-chart-3"></i>
+              <span class="nav-text">Reports</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'export_data' %}" class="nav-link-item {% if request.resolver_match.url_name == 'export_data' %}active{% endif %}">
+              <i data-lucide="download"></i>
+              <span class="nav-text">Export Data</span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-      <!-- Day Switcher -->
-      {% if event_config %}
-      <form method="post" action="{% url 'change_day' %}" class="day-switcher-form d-flex align-items-center gap-1 me-3">
-        {% csrf_token %}
-        <select name="day" id="daySelect" onchange="this.form.submit()">
-          {% for d in day_range %}
-          <option value="{{ d }}" {% if d == event_config.current_day %}selected{% endif %}>Day {{ d }}</option>
-          {% endfor %}
-        </select>
-      </form>
-      {% endif %}
+      <!-- System -->
+      <div>
+        <div class="nav-group-title">System</div>
+        <ul class="nav-list">
+          <li>
+            <a href="{% url 'event_settings' %}" class="nav-link-item {% if request.resolver_match.url_name == 'event_settings' %}active{% endif %}">
+              <i data-lucide="settings"></i>
+              <span class="nav-text">Settings</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-      <!-- User/Logout -->
-      <div class="d-flex align-items-center gap-2">
-        <span style="color:rgba(255,255,255,0.7);font-size:0.85rem;">👤 {{ user.username }}</span>
-        <a href="{% url 'logout' %}" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);">
-          Logout
+    <!-- Sidebar Account Footer -->
+    <div class="sidebar-footer">
+      <div class="user-profile-card">
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ user.username|make_list|first|upper }}
+          </div>
+          <div class="user-details">
+            <span class="user-name">{{ user.username }}</span>
+            <span class="user-role">Administrator</span>
+          </div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout" title="Sign out">
+          <i data-lucide="log-out"></i>
         </a>
       </div>
     </div>
-  </div>
-</nav>
-{% endif %}
+  </aside>
 
-<!-- ── Messages ── -->
-{% if messages %}
-<div class="messages-container" id="messagesContainer">
-  {% for message in messages %}
-  <div class="message-item message-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}"
-       onclick="this.remove()">
-    {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
-    {{ message }}
+  <!-- ── Main App Content Area ── -->
+  <div class="app-main">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <!-- Mobile Toggle Button -->
+        <button type="button" class="btn-icon-toggle d-lg-none" onclick="toggleSidebar()" aria-label="Toggle Navigation">
+          <i data-lucide="menu"></i>
+        </button>
+        <!-- Desktop Collapse Toggle Button -->
+        <button type="button" class="btn-icon-toggle d-none d-lg-flex" onclick="toggleDesktopCollapse()" aria-label="Collapse Navigation">
+          <i data-lucide="panel-left"></i>
+        </button>
+
+        <!-- Breadcrumb / Page Title -->
+        <div class="breadcrumb-nav">
+          <span class="breadcrumb-item-muted">Navratri EMS</span>
+          <span class="breadcrumb-separator"><i data-lucide="chevron-right"></i></span>
+          <span class="breadcrumb-item-active">{% block page_heading %}Dashboard{% endblock %}</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Event Status Live Indicator -->
+        {% if event_config %}
+        <div class="event-live-pill d-none d-sm-inline-flex">
+          <span class="pulse-dot"></span>
+          <span>Day {{ event_config.current_day }} of {{ event_config.total_days }}</span>
+        </div>
+
+        <!-- Day Selector Dropdown -->
+        <form method="post" action="{% url 'change_day' %}" class="day-selector-form">
+          {% csrf_token %}
+          <select name="day" id="daySelect" class="header-day-select" onchange="this.form.submit()" title="Change Current Event Day">
+            {% for d in day_range %}
+            <option value="{{ d }}" {% if d == event_config.current_day %}selected{% endif %}>
+              Day {{ d }}{% if d == event_config.current_day %} (Active){% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+
+        <!-- Theme Toggle Button -->
+        <button type="button" class="btn-icon-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+          <i data-lucide="moon" id="themeIconMoon"></i>
+          <i data-lucide="sun" id="themeIconSun" style="display:none;"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Toast Notifications ── -->
+    {% if messages %}
+    <div class="toast-container-custom" id="messagesContainer">
+      {% for message in messages %}
+      <div class="toast-item toast-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}" onclick="this.remove()">
+        <i data-lucide="{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}alert-circle{% elif message.tags == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── Main View Content ── -->
+    <main class="app-content">
+      {% block content %}{% endblock %}
+    </main>
   </div>
-  {% endfor %}
 </div>
+{% else %}
+  <!-- Unauthenticated Views (e.g. Login) -->
+  <main>
+    {% block unauthenticated_content %}{% endblock %}
+  </main>
 {% endif %}
 
-<!-- ── Main Content ── -->
-<main>
-  {% block content %}{% endblock %}
-</main>
-
-<!-- Decorative -->
-<div class="om-pattern" aria-hidden="true">ॐ</div>
-
-<!-- Bootstrap JS -->
+<!-- Bootstrap 5 Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Initialize Lucide Icons & Layout Scripts -->
 <script>
-// Auto-dismiss messages after 4s
-setTimeout(() => {
-  const container = document.getElementById('messagesContainer');
-  if (container) {
-    container.querySelectorAll('.message-item').forEach(el => {
-      el.style.transition = 'opacity 0.5s';
-      el.style.opacity = '0';
-      setTimeout(() => el.remove(), 500);
-    });
+  // Theme Toggle Logic
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    updateThemeIcons(nextTheme);
   }
-}, 4000);
+
+  function updateThemeIcons(theme) {
+    const moon = document.getElementById('themeIconMoon');
+    const sun = document.getElementById('themeIconSun');
+    if (!moon || !sun) return;
+    if (theme === 'dark') {
+      moon.style.display = 'none';
+      sun.style.display = 'inline-block';
+    } else {
+      moon.style.display = 'inline-block';
+      sun.style.display = 'none';
+    }
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+
+  // Update theme icons on load
+  const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  updateThemeIcons(activeTheme);
+
+  // Initialize Lucide icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+
+  // Mobile sidebar drawer toggle
+  function toggleSidebar(forceState) {
+    const sidebar = document.getElementById('appSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (!sidebar || !overlay) return;
+
+    const isOpen = typeof forceState === 'boolean' ? !forceState : sidebar.classList.contains('sidebar-open');
+    if (isOpen) {
+      sidebar.classList.remove('sidebar-open');
+      overlay.classList.remove('active');
+    } else {
+      sidebar.classList.add('sidebar-open');
+      overlay.classList.add('active');
+    }
+  }
+
+  // Desktop sidebar collapse toggle
+  function toggleDesktopCollapse() {
+    const sidebar = document.getElementById('appSidebar');
+    const container = document.getElementById('appContainer');
+    if (!sidebar) return;
+    sidebar.classList.toggle('sidebar-collapsed');
+    if (container) {
+      container.classList.toggle('sidebar-collapsed-active');
+    }
+  }
+
+  // Auto-dismiss toast notifications after 4s
+  setTimeout(() => {
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+      container.querySelectorAll('.toast-item').forEach(el => {
+        el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-8px)';
+        setTimeout(() => el.remove(), 400);
+      });
+    }
+  }, 4000);
 </script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>

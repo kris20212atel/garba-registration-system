@@ -1,168 +1,250 @@
 {% extends 'base.html' %}
 {% block title %}Entry & Gift Verification — Navratri EMS{% endblock %}
+{% block page_heading %}Entry & Gift Verification{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:900px;">
-  <div class="page-header">
-    <h1>🚪 Entry & Gift Verification</h1>
-    <p class="subtitle">
-      Current Day: <strong>Day {{ config.current_day }}</strong> &mdash; Enter Registration ID to verify child
-    </p>
+<div class="mx-auto" style="max-width: 860px;">
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+    <div>
+      <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;">Entry & Gift Verification</h1>
+      <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Fast-track verification hub for volunteer gate operations.</p>
+    </div>
+    <div class="badge-chip badge-purple py-2 px-3" style="font-size:0.8125rem;">
+      <i data-lucide="calendar"></i>
+      <span>Current Event Day: Day {{ config.current_day }}</span>
+    </div>
   </div>
 
-  <!-- Search Box -->
-  <div class="entry-search-wrapper mb-4">
-    <form method="post" id="lookupForm" action="{% url 'entry' %}">
-      {% csrf_token %}
-      <label for="registration_id" class="d-block text-center mb-3 fw-700"
-             style="font-size:1.1rem;color:var(--purple-dark);">
-        Enter Registration ID
-      </label>
-      <input
-        type="text"
-        id="registration_id"
-        name="registration_id"
-        class="form-control entry-search-input"
-        placeholder="1"
-        value="{{ query_id }}"
-        maxlength="6"
-        autocomplete="off"
-        spellcheck="false"
-        autofocus
-      >
-      <button type="submit" class="btn-check-entry" id="checkBtn">
-        🔍 CHECK
-      </button>
-    </form>
+  <!-- Search / Verification Input Card -->
+  <div class="card mb-4">
+    <div class="card-body-clean p-4">
+      <form method="post" id="lookupForm" action="{% url 'entry' %}">
+        {% csrf_token %}
+        <label for="registration_id" class="form-label text-center mb-2" style="font-size:0.9375rem;">
+          Enter Registration ID to Verify
+        </label>
+        <div class="verify-input-group mb-3">
+          <i data-lucide="scan-line" class="verify-input-icon"></i>
+          <input
+            type="text"
+            id="registration_id"
+            name="registration_id"
+            class="form-control verify-input"
+            placeholder="e.g. 1, 2, 10"
+            value="{{ query_id }}"
+            maxlength="10"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+            required
+          >
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary btn-lg flex-grow-1 justify-content-center" id="checkBtn">
+            <i data-lucide="search"></i>
+            <span>Check Registration</span>
+          </button>
+          {% if query_id %}
+          <a href="{% url 'entry' %}" class="btn btn-secondary btn-lg" title="Clear Search">
+            <i data-lucide="x"></i>
+            <span>Clear</span>
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
   </div>
 
-  <!-- Result -->
+  <!-- Verification Result -->
   {% if result %}
     {% if result.found %}
-    <!-- ✅ Child Found -->
-    <div class="result-card found mb-4" id="resultCard">
-      <div class="result-header found">
-        ✅ CHILD FOUND
+    <!-- Child Found Card -->
+    <div class="card mb-4" id="resultCard" style="border-color:#BBF7D0;">
+      <!-- Header -->
+      <div class="card-header-clean" style="background:#F0FDF4;border-bottom-color:#DCFCE7;">
+        <h4 style="color:var(--success-text);">
+          <i data-lucide="check-circle-2" style="color:var(--success);width:20px;height:20px;"></i>
+          <span>Child Verified & Found</span>
+        </h4>
+        <span class="badge-chip badge-purple">
+          <i data-lucide="calendar"></i> Day {{ result.day }}
+        </span>
       </div>
-      <div class="card-body p-4">
-        <div class="row g-3 align-items-center">
+
+      <div class="card-body-clean p-4">
+        <!-- Child Details Row -->
+        <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4 pb-4 border-bottom" style="border-color:var(--border-subtle) !important;">
           <!-- Photo -->
-          <div class="col-auto">
+          <div class="flex-shrink-0">
             {% if result.child.photo %}
-            <img src="{{ result.child.photo.url }}" alt="{{ result.child.name }}" class="child-photo-lg" id="childPhoto">
+            <img src="{{ result.child.photo.url }}" alt="{{ result.child.name }}" class="child-photo-card" id="childPhoto">
             {% else %}
-            <div class="child-photo-placeholder" style="width:160px;height:160px;border-radius:16px;">👶</div>
+            <div class="child-photo-placeholder-lg">
+              <i data-lucide="user" style="width:48px;height:48px;margin-bottom:0.25rem;"></i>
+              <span style="font-size:0.75rem;font-weight:600;">No Photo</span>
+            </div>
             {% endif %}
           </div>
-          <!-- Details -->
-          <div class="col">
-            <div class="reg-id-display mb-2" style="font-size:1.8rem;">{{ result.child.registration_id }}</div>
-            <h3 class="fw-800 mb-1" style="color:var(--purple-dark);">{{ result.child.name }}</h3>
-            <p class="mb-0" style="color:var(--text-muted);">
-              👨‍👩‍👧 {{ result.child.guardian_name }}<br>
-              📞 {{ result.child.phone }}
-              {% if result.child.age %} &bull; Age {{ result.child.age }}{% endif %}
-              {% if result.child.gender %} &bull; {{ result.child.get_gender_display }}{% endif %}
-            </p>
-          </div>
-          <!-- Day Info -->
-          <div class="col-auto text-end">
-            <div class="day-badge" style="font-size:1rem;padding:0.5rem 1.25rem;">
-              📅 Day {{ result.day }}
-            </div>
-          </div>
-        </div>
 
-        <!-- Status Row -->
-        <div class="row g-2 mt-3">
-          <div class="col-md-6">
-            <div class="card p-3 text-center" style="border:2px solid {% if result.attendance %}var(--green){% else %}var(--border){% endif %}">
-              <div style="font-size:0.85rem;color:var(--text-muted);">🚪 Entry Status</div>
-              {% if result.attendance %}
-              <div class="status-badge status-entered mt-1 d-inline-flex">
-                ✅ Entered at {{ result.attendance.entry_time|time:"h:i A" }}
+          <!-- Bio Information -->
+          <div class="flex-grow-1 text-center text-sm-start">
+            <div class="d-flex align-items-center justify-content-center justify-content-sm-start gap-2 mb-2">
+              <span class="id-pill" style="font-size:1.1rem;padding:0.25rem 0.75rem;">{{ result.child.registration_id }}</span>
+              <a href="{% url 'child_profile' result.child.pk %}" class="btn btn-secondary btn-sm" title="View Full Profile">
+                <i data-lucide="external-link"></i> Full Profile
+              </a>
+              <a href="{% url 'id_card' result.child.pk %}" class="btn btn-secondary btn-sm" title="Print ID Badge">
+                <i data-lucide="credit-card"></i> ID Badge
+              </a>
+            </div>
+
+            <h2 class="mb-2" style="font-size:1.5rem;font-weight:700;">{{ result.child.name }}</h2>
+
+            <div class="row g-2 text-secondary" style="font-size:0.875rem;">
+              <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+                <i data-lucide="users" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                <span><strong>Parent:</strong> {{ result.child.guardian_name }}</span>
               </div>
-              {% else %}
-              <div class="status-badge status-not-entered mt-1 d-inline-flex">
-                ⏳ Not Yet Entered
+              <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+                <i data-lucide="phone" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                <span><strong>Phone:</strong> {{ result.child.phone }}</span>
+              </div>
+              {% if result.child.age %}
+              <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+                <i data-lucide="cake" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                <span><strong>Age:</strong> {{ result.child.age }} years</span>
               </div>
               {% endif %}
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card p-3 text-center" style="border:2px solid {% if result.gift %}var(--saffron){% else %}var(--border){% endif %}">
-              <div style="font-size:0.85rem;color:var(--text-muted);">🎁 Gift Status</div>
-              {% if result.gift %}
-              <div class="status-badge status-given mt-1 d-inline-flex">
-                🎁 Given at {{ result.gift.gift_time|time:"h:i A" }}
-              </div>
-              {% else %}
-              <div class="status-badge status-not-given mt-1 d-inline-flex">
-                ❌ Not Yet Given
+              {% if result.child.gender %}
+              <div class="col-12 col-sm-6 d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
+                <i data-lucide="smile" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                <span><strong>Gender:</strong> {{ result.child.get_gender_display }}</span>
               </div>
               {% endif %}
             </div>
           </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="row g-3 mt-2">
-          <div class="col-md-6">
-            <button
-              type="button"
-              id="entryBtn"
-              class="action-btn-entry entry"
-              data-pk="{{ result.child.pk }}"
-              data-url="{% url 'record_entry' result.child.pk %}"
-              {% if result.attendance %}disabled{% endif %}
-              onclick="recordAction(this, 'entry')"
-            >
-              {% if result.attendance %}
-              ✅ Already Entered
-              {% else %}
-              🚪 ALLOW ENTRY
-              {% endif %}
-            </button>
+        <!-- 2 Side-by-Side Operational Status & Action Cards -->
+        <div class="row g-3 pt-4">
+          <!-- Entry Action Card -->
+          <div class="col-12 col-md-6">
+            <div class="action-card-entry h-100 {% if result.attendance %}status-active{% endif %}" id="entryStatusCard">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-secondary fw-semibold" style="font-size:0.8125rem;text-transform:uppercase;letter-spacing:0.04em;">
+                    Entry Attendance
+                  </div>
+                  <div class="mt-1" id="entryStatusBadge">
+                    {% if result.attendance %}
+                    <span class="badge-chip badge-success" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+                      <i data-lucide="check-circle-2"></i> Entered at {{ result.attendance.entry_time|time:"h:i A" }}
+                    </span>
+                    {% else %}
+                    <span class="badge-chip badge-warning" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+                      <i data-lucide="clock"></i> Not Yet Entered Today
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="stat-icon-badge badge-tint-green">
+                  <i data-lucide="log-in"></i>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  id="entryBtn"
+                  class="btn {% if result.attendance %}btn-secondary{% else %}btn-success{% endif %} btn-lg w-100 justify-content-center"
+                  data-pk="{{ result.child.pk }}"
+                  data-url="{% url 'record_entry' result.child.pk %}"
+                  {% if result.attendance %}disabled{% endif %}
+                  onclick="recordAction(this, 'entry')"
+                >
+                  <i data-lucide="{% if result.attendance %}check{% else %}log-in{% endif %}"></i>
+                  <span>{% if result.attendance %}Already Entered Today{% else %}Mark Entry{% endif %}</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="col-md-6">
-            <button
-              type="button"
-              id="giftBtn"
-              class="action-btn-entry gift"
-              data-pk="{{ result.child.pk }}"
-              data-url="{% url 'record_gift' result.child.pk %}"
-              {% if result.gift %}disabled{% endif %}
-              onclick="recordAction(this, 'gift')"
-            >
-              {% if result.gift %}
-              🎁 Gift Already Given
-              {% else %}
-              🎁 GIVE GIFT
-              {% endif %}
-            </button>
+
+          <!-- Gift Action Card -->
+          <div class="col-12 col-md-6">
+            <div class="action-card-entry h-100 {% if result.gift %}status-active{% endif %}" id="giftStatusCard">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="text-secondary fw-semibold" style="font-size:0.8125rem;text-transform:uppercase;letter-spacing:0.04em;">
+                    Daily Gift Distribution
+                  </div>
+                  <div class="mt-1" id="giftStatusBadge">
+                    {% if result.gift %}
+                    <span class="badge-chip badge-success" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+                      <i data-lucide="gift"></i> Given at {{ result.gift.gift_time|time:"h:i A" }}
+                    </span>
+                    {% else %}
+                    <span class="badge-chip badge-slate" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+                      <i data-lucide="x-circle"></i> Not Distributed Today
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="stat-icon-badge badge-tint-amber">
+                  <i data-lucide="gift"></i>
+                </div>
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  id="giftBtn"
+                  class="btn {% if result.gift %}btn-secondary{% else %}btn-warning{% endif %} btn-lg w-100 justify-content-center"
+                  data-pk="{{ result.child.pk }}"
+                  data-url="{% url 'record_gift' result.child.pk %}"
+                  {% if result.gift %}disabled{% endif %}
+                  onclick="recordAction(this, 'gift')"
+                >
+                  <i data-lucide="{% if result.gift %}check{% else %}gift{% endif %}"></i>
+                  <span>{% if result.gift %}Gift Already Given Today{% else %}Mark Gift Distributed{% endif %}</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Feedback area -->
+        <!-- Live Inline Feedback Alert Area -->
         <div id="actionFeedback" class="mt-3"></div>
       </div>
     </div>
 
     {% else %}
-    <!-- ❌ Not Found -->
-    <div class="result-card not-found fade-in" id="resultCard">
-      <div class="result-header not-found">
-        ❌ REGISTRATION NOT FOUND
-      </div>
-      <div class="card-body p-4 text-center">
-        <div style="font-size:4rem;">🔍</div>
-        <h4 class="fw-700 mt-2" style="color:var(--red);">
-          "{{ result.query }}" is not registered.
+    <!-- ❌ Child Not Found State -->
+    <div class="card mb-4" id="resultCard" style="border-color:#FECACA;">
+      <div class="card-header-clean" style="background:#FEF2F2;border-bottom-color:#FEE2E2;">
+        <h4 style="color:var(--danger-text);">
+          <i data-lucide="alert-circle" style="color:var(--danger);width:20px;height:20px;"></i>
+          <span>Registration Not Found</span>
         </h4>
-        <p style="color:var(--text-muted);">
-          Please check the registration ID or
-          <a href="{% url 'register_child' %}">register the child</a> first.
+      </div>
+      <div class="card-body-clean p-5 text-center">
+        <div class="empty-state-icon mx-auto mb-3" style="background:#FEE2E2;color:var(--danger);">
+          <i data-lucide="search-x" style="width:28px;height:28px;"></i>
+        </div>
+        <h3 class="mb-1" style="font-weight:700;">No record found for "{{ result.query }}"</h3>
+        <p class="text-secondary mx-auto mb-4" style="max-width:420px;font-size:0.875rem;">
+          The ID does not match any registered child. Please verify the ID digits, or register the child using the button below.
         </p>
+        <div class="d-flex justify-content-center gap-2">
+          <a href="{% url 'register_child' %}" class="btn btn-primary btn-lg">
+            <i data-lucide="user-plus"></i>
+            <span>Register This Child</span>
+          </a>
+          <a href="{% url 'search' %}?q={{ result.query }}" class="btn btn-secondary btn-lg">
+            <i data-lucide="search"></i>
+            <span>Search Directory</span>
+          </a>
+        </div>
       </div>
     </div>
     {% endif %}
@@ -174,59 +256,95 @@
 <script>
 const CSRF_TOKEN = '{{ csrf_token }}';
 
-// Do NOT auto-uppercase — IDs are now plain numbers
-
-function showFeedback(html, type) {
+function showFeedback(message, type) {
   const fb = document.getElementById('actionFeedback');
-  if (fb) {
-    fb.innerHTML = `<div class="alert-${type}-custom">${html}</div>`;
+  if (!fb) return;
+
+  const bgClass = type === 'success' ? 'toast-success' : (type === 'warning' ? 'toast-warning' : 'toast-error');
+  const icon = type === 'success' ? 'check-circle' : (type === 'warning' ? 'alert-triangle' : 'alert-circle');
+  
+  fb.innerHTML = `
+    <div class="toast-item ${bgClass}" style="animation:none;width:100%;max-width:none;">
+      <i data-lucide="${icon}"></i>
+      <span class="fw-semibold">${message}</span>
+    </div>
+  `;
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
   }
 }
 
 async function recordAction(btn, type) {
   const url = btn.dataset.url;
   btn.disabled = true;
-  const origText = btn.innerHTML;
-  btn.innerHTML = '<span class="spinner"></span> Recording...';
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="spinner-saas me-2"></span> Processing...';
 
   try {
     const resp = await fetch(url, {
       method: 'POST',
-      headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+      headers: {
+        'X-CSRFToken': CSRF_TOKEN,
+        'Content-Type': 'application/json'
+      },
     });
     const data = await resp.json();
 
     if (data.success) {
-      btn.innerHTML = type === 'entry' ? '✅ Entry Recorded' : '🎁 Gift Given';
-      btn.style.background = 'var(--green)';
-      showFeedback(data.message + (data.entry_time || data.gift_time ? ` — ${data.entry_time || data.gift_time}` : ''), 'success');
-      // Update status card
-      updateStatus(type, data.entry_time || data.gift_time);
+      btn.innerHTML = `<i data-lucide="check"></i> <span>${type === 'entry' ? 'Already Entered Today' : 'Gift Already Given Today'}</span>`;
+      btn.className = 'btn btn-secondary btn-lg w-100 justify-content-center';
+      
+      const timeStr = data.entry_time || data.gift_time;
+      showFeedback(`${data.message}${timeStr ? ` at ${timeStr}` : ''}`, 'success');
+      
+      // Update the status cards
+      updateStatus(type, timeStr);
     } else {
-      btn.innerHTML = origText;
+      btn.innerHTML = origHtml;
       btn.disabled = (data.error === 'DUPLICATE');
       if (data.error === 'DUPLICATE') {
-        btn.innerHTML = type === 'entry' ? '✅ Already Entered' : '🎁 Already Given';
+        btn.innerHTML = `<i data-lucide="check"></i> <span>${type === 'entry' ? 'Already Entered Today' : 'Gift Already Given Today'}</span>`;
+        btn.className = 'btn btn-secondary btn-lg w-100 justify-content-center';
       }
       showFeedback(data.message, data.error === 'DUPLICATE' ? 'warning' : 'danger');
     }
   } catch (err) {
-    btn.innerHTML = origText;
+    btn.innerHTML = origHtml;
     btn.disabled = false;
-    showFeedback('❌ Network error. Please try again.', 'danger');
+    showFeedback('Network error. Please try again.', 'danger');
+  } finally {
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   }
 }
 
 function updateStatus(type, time) {
-  const cards = document.querySelectorAll('.col-md-6 .card.p-3');
-  const idx = type === 'entry' ? 0 : 1;
-  if (cards[idx]) {
-    const badge = cards[idx].querySelector('.status-badge');
+  if (type === 'entry') {
+    const card = document.getElementById('entryStatusCard');
+    const badge = document.getElementById('entryStatusBadge');
+    if (card) card.classList.add('status-active');
     if (badge) {
-      badge.className = `status-badge ${type === 'entry' ? 'status-entered' : 'status-given'} mt-1 d-inline-flex`;
-      badge.textContent = type === 'entry' ? `✅ Entered at ${time}` : `🎁 Given at ${time}`;
+      badge.innerHTML = `
+        <span class="badge-chip badge-success" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+          <i data-lucide="check-circle-2"></i> Entered at ${time}
+        </span>
+      `;
     }
-    cards[idx].style.borderColor = type === 'entry' ? 'var(--green)' : 'var(--saffron)';
+  } else {
+    const card = document.getElementById('giftStatusCard');
+    const badge = document.getElementById('giftStatusBadge');
+    if (card) card.classList.add('status-active');
+    if (badge) {
+      badge.innerHTML = `
+        <span class="badge-chip badge-success" style="font-size:0.8125rem;padding:0.35rem 0.65rem;">
+          <i data-lucide="gift"></i> Given at ${time}
+        </span>
+      `;
+    }
+  }
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
   }
 }
 </script>

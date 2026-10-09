@@ -23,16 +23,23 @@ RAILWAY_STATIC_URL = os.environ.get('RAILWAY_STATIC_URL', '')
 if RAILWAY_STATIC_URL:
     ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
 # Also allow any *.railway.app, *.up.railway.app, and *.vercel.app domains
 ALLOWED_HOSTS += ['.railway.app', '.up.railway.app', '.vercel.app', '.now.sh', '*']
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-7b318.up.railway.app',
     'https://*.vercel.app',
     'https://*.railway.app',
     'https://*.up.railway.app',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
 ]
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -124,19 +131,35 @@ USE_I18N = True
 USE_TZ = True
 
 # ── Static files ──────────────────────────────────────────────────────────────
+import mimetypes
+mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("application/javascript", ".js", True)
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise compressed static files in production
-STORAGES = {
-    'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
-    },
-    'default': {
-        'BACKEND': 'django.core.files.storage.FileSystemStorage',
-    },
-}
+if DEBUG:
+    WHITENOISE_AUTOREFRESH = True
+    WHITENOISE_USE_FINDERS = True
+    STORAGES = {
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+    }
+else:
+    # WhiteNoise compressed static files in production
+    STORAGES = {
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage',
+        },
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+    }
 
 # ── Media files ───────────────────────────────────────────────────────────────
 MEDIA_URL = '/media/'

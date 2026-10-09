@@ -1,83 +1,128 @@
 {% extends 'base.html' %}
 {% block title %}Event Settings — Navratri EMS{% endblock %}
+{% block page_heading %}Settings{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:700px;">
-  <div class="page-header">
-    <h1>⚙️ Event Settings</h1>
-    <p class="subtitle">Configure the Navratri event parameters</p>
+<div class="mx-auto" style="max-width: 760px;">
+  <!-- Header -->
+  <div class="mb-4">
+    <h1 class="mb-1" style="font-size:1.75rem;font-weight:700;">Event Settings</h1>
+    <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Configure the active festival event parameters and live calendar tracking.</p>
   </div>
 
-  <!-- Current Status -->
+  <!-- Current Live Status Card -->
   <div class="card mb-4 p-4">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
       <div>
-        <div style="color:var(--text-muted);font-size:0.85rem;">Current Event</div>
-        <h4 class="fw-700 mb-0" style="color:var(--purple-dark);">{{ config.name }}</h4>
+        <span class="text-secondary" style="font-size:0.75rem;text-transform:uppercase;font-weight:600;letter-spacing:0.04em;">Active Event</span>
+        <h3 class="mb-0 mt-1" style="font-size:1.25rem;font-weight:700;">{{ config.name }}</h3>
       </div>
-      <div class="day-badge" style="font-size:1rem;padding:0.6rem 1.5rem;">
-        Day {{ config.current_day }} / {{ config.total_days }}
+      <div class="badge-chip badge-purple py-2 px-3" style="font-size:0.875rem;">
+        <i data-lucide="calendar"></i>
+        <span>Active: Day {{ config.current_day }} of {{ config.total_days }}</span>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header">⚙️ Edit Event Configuration</div>
-    <div class="card-body p-4">
+  <!-- Configuration Form Card -->
+  <div class="card mb-4">
+    <div class="card-header-clean">
+      <h4>
+        <i data-lucide="sliders" style="color:var(--primary-accent);width:18px;height:18px;"></i>
+        <span>Event Parameters</span>
+      </h4>
+    </div>
+    <div class="card-body-clean p-4">
       <form method="post">
         {% csrf_token %}
 
         <div class="mb-3">
-          <label class="form-label">🏷️ Event Name</label>
+          <label class="form-label" for="{{ form.name.id_for_label }}">
+            Event Name <span class="req">*</span>
+          </label>
           {{ form.name }}
-          {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+          {% if form.name.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.name.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="mb-3">
-          <label class="form-label">📅 Start Date (optional)</label>
+          <label class="form-label" for="{{ form.start_date.id_for_label }}">
+            Start Date (Optional)
+          </label>
           {{ form.start_date }}
+          {% if form.start_date.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.start_date.errors.0 }}</div>
+          {% endif %}
         </div>
 
         <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label">📆 Total Days</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.total_days.id_for_label }}">
+              Total Event Days <span class="req">*</span>
+            </label>
             {{ form.total_days }}
-            {% if form.total_days.errors %}<div class="invalid-feedback d-block">{{ form.total_days.errors.0 }}</div>{% endif %}
+            {% if form.total_days.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.total_days.errors.0 }}</div>
+            {% endif %}
           </div>
-          <div class="col-md-6">
-            <label class="form-label">🗓️ Current Day</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.current_day.id_for_label }}">
+              Current Active Day <span class="req">*</span>
+            </label>
             {{ form.current_day }}
-            {% if form.current_day.errors %}<div class="invalid-feedback d-block">{{ form.current_day.errors.0 }}</div>{% endif %}
+            {% if form.current_day.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.current_day.errors.0 }}</div>
+            {% endif %}
           </div>
         </div>
 
         {% if form.non_field_errors %}
-        <div class="alert-danger-custom mb-3">{{ form.non_field_errors.0 }}</div>
+        <div class="toast-item toast-error mb-4" style="animation:none;width:100%;">
+          <i data-lucide="alert-circle" style="color:var(--danger);"></i>
+          <span style="color:var(--danger-text);font-weight:600;">{{ form.non_field_errors.0 }}</span>
+        </div>
         {% endif %}
 
-        <div class="alert-warning-custom mb-4">
-          ⚠️ Changing the current day does not delete any historical data. Each day's records are preserved independently.
+        <div class="p-3 rounded-3 border mb-4 d-flex align-items-start gap-2" style="background:#FFFBEB;border-color:#FDE68A !important;">
+          <i data-lucide="alert-triangle" style="color:var(--warning);width:18px;height:18px;flex-shrink:0;margin-top:2px;"></i>
+          <div style="font-size:0.8125rem;color:#92400E;">
+            Changing the current active day adjusts today's gate verification window. Historical check-ins and gift records for other days remain permanently preserved.
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-xl w-100">💾 Save Settings</button>
+        <button type="submit" class="btn btn-primary btn-lg w-100 justify-content-center">
+          <i data-lucide="check"></i>
+          <span>Save Configuration</span>
+        </button>
       </form>
     </div>
   </div>
 
-  <!-- Quick Day Buttons -->
-  <div class="card mt-4 p-4">
-    <h5 class="fw-700 mb-3" style="color:var(--purple-dark);">⚡ Quick Day Switch</h5>
-    <div class="d-flex flex-wrap gap-2">
-      {% for d in day_choices %}
-      <form method="post" action="{% url 'change_day' %}" class="d-inline">
-        {% csrf_token %}
-        <input type="hidden" name="day" value="{{ d }}">
-        <button type="submit"
-                class="btn {% if d == config.current_day %}btn-saffron{% else %}btn-outline-purple{% endif %} btn-sm">
-          Day {{ d }}
-        </button>
-      </form>
-      {% endfor %}
+  <!-- Quick Day Switcher Pills -->
+  <div class="card mb-4">
+    <div class="card-header-clean">
+      <h4>
+        <i data-lucide="calendar" style="color:var(--primary-accent);width:18px;height:18px;"></i>
+        <span>Quick Day Switcher</span>
+      </h4>
+    </div>
+    <div class="card-body-clean p-4">
+      <p class="text-secondary mb-3" style="font-size:0.875rem;">
+        Quickly toggle the active day without editing settings:
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        {% for d in day_choices %}
+        <form method="post" action="{% url 'change_day' %}" class="d-inline">
+          {% csrf_token %}
+          <input type="hidden" name="day" value="{{ d }}">
+          <button type="submit"
+                  class="btn {% if d == config.current_day %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+            Day {{ d }}{% if d == config.current_day %} (Active){% endif %}
+          </button>
+        </form>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>

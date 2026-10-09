@@ -1,83 +1,136 @@
 {% extends 'base.html' %}
 {% block title %}Edit {{ child.registration_id }} — Navratri EMS{% endblock %}
+{% block page_heading %}Edit Child{% endblock %}
 
 {% block content %}
-<div class="page-wrapper" style="max-width:700px;">
-  <div class="page-header">
-    <h1>✏️ Edit Child — {{ child.registration_id }}</h1>
-    <p class="subtitle">Update the details for <strong>{{ child.name }}</strong></p>
+<div class="mx-auto" style="max-width: 720px;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'child_profile' child.pk %}" class="btn btn-secondary btn-sm" title="Back to Profile">
+        <i data-lucide="arrow-left"></i>
+      </a>
+      <div>
+        <h1 class="mb-0" style="font-size:1.75rem;font-weight:700;">Edit Registration</h1>
+        <p class="mb-0 text-secondary" style="font-size:0.875rem;">Update profile records for {{ child.name }}</p>
+      </div>
+    </div>
+    <span class="id-pill">{{ child.registration_id }}</span>
   </div>
 
-  <div class="card">
-    <div class="card-header">📋 Edit Registration</div>
-    <div class="card-body p-4">
-      <div class="text-center mb-4">
-        <div class="reg-id-display">{{ child.registration_id }}</div>
-      </div>
+  <div class="card mb-4">
+    <div class="card-header-clean">
+      <h4>
+        <i data-lucide="pencil" style="color:var(--primary-accent);width:18px;height:18px;"></i>
+        <span>Update Information</span>
+      </h4>
+    </div>
 
+    <div class="card-body-clean p-4">
       <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Current photo -->
+        <!-- Current photo preview if present -->
         {% if child.photo %}
-        <div class="mb-3">
-          <label class="form-label">Current Photo</label>
-          <div class="d-flex align-items-center gap-3">
-            <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-photo">
-            <div style="color:var(--text-muted);font-size:0.85rem;">
-              Upload a new photo below to replace this one.
-            </div>
+        <div class="mb-3 p-3 rounded-3 border bg-light d-flex align-items-center gap-3" style="background:var(--bg) !important;border-color:var(--primary-border) !important;">
+          <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-avatar-sm" style="width:64px;height:64px;border-radius:var(--radius-md);">
+          <div>
+            <div class="fw-semibold text-primary" style="font-size:0.875rem;">Current Photo</div>
+            <div class="text-secondary" style="font-size:0.8125rem;">Upload a new image below to replace this photo.</div>
           </div>
         </div>
         {% endif %}
 
+        <!-- Child Name -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.name.id_for_label }}">👶 Child Name *</label>
+          <label class="form-label" for="{{ form.name.id_for_label }}">
+            Child Name <span class="req">*</span>
+          </label>
           {{ form.name }}
-          {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+          {% if form.name.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.name.errors.0 }}</div>
+          {% endif %}
         </div>
 
+        <!-- Guardian Name -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">👨‍👩‍👧 Parent/Guardian Name *</label>
+          <label class="form-label" for="{{ form.guardian_name.id_for_label }}">
+            Parent / Guardian Name <span class="req">*</span>
+          </label>
           {{ form.guardian_name }}
-          {% if form.guardian_name.errors %}<div class="invalid-feedback d-block">{{ form.guardian_name.errors.0 }}</div>{% endif %}
+          {% if form.guardian_name.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.guardian_name.errors.0 }}</div>
+          {% endif %}
         </div>
 
+        <!-- Phone Number -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.phone.id_for_label }}">📞 Phone Number *</label>
+          <label class="form-label" for="{{ form.phone.id_for_label }}">
+            Contact Phone Number <span class="req">*</span>
+          </label>
           {{ form.phone }}
-          {% if form.phone.errors %}<div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>{% endif %}
+          {% if form.phone.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.phone.errors.0 }}</div>
+          {% endif %}
         </div>
 
+        <!-- Photo -->
         <div class="mb-3">
-          <label class="form-label" for="{{ form.photo.id_for_label }}">📷 Photo (optional — leave blank to keep current)</label>
-          {{ form.photo }}
-          {% if form.photo.errors %}<div class="invalid-feedback d-block">{{ form.photo.errors.0 }}</div>{% endif %}
+          <label class="form-label" for="{{ form.photo.id_for_label }}">
+            New Photograph (Optional)
+          </label>
+          <div class="p-3 border rounded-3 bg-light" style="border:1px dashed var(--primary-border) !important;background:var(--bg) !important;">
+            {{ form.photo }}
+            <div class="form-hint mt-1">Leave empty to retain existing photo.</div>
+          </div>
+          {% if form.photo.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.photo.errors.0 }}</div>
+          {% endif %}
         </div>
 
+        <!-- Age & Gender Grid -->
         <div class="row g-3 mb-3">
-          <div class="col-md-6">
-            <label class="form-label" for="{{ form.age.id_for_label }}">🎂 Age</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.age.id_for_label }}">Age (Years)</label>
             {{ form.age }}
+            {% if form.age.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.age.errors.0 }}</div>
+            {% endif %}
           </div>
-          <div class="col-md-6">
-            <label class="form-label" for="{{ form.gender.id_for_label }}">⚧ Gender</label>
+          <div class="col-12 col-sm-6">
+            <label class="form-label" for="{{ form.gender.id_for_label }}">Gender</label>
             {{ form.gender }}
+            {% if form.gender.errors %}
+              <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.gender.errors.0 }}</div>
+            {% endif %}
           </div>
         </div>
 
+        <!-- Notes -->
         <div class="mb-4">
-          <label class="form-label" for="{{ form.notes.id_for_label }}">📝 Notes</label>
+          <label class="form-label" for="{{ form.notes.id_for_label }}">Special Notes</label>
           {{ form.notes }}
+          {% if form.notes.errors %}
+            <div class="text-danger mt-1" style="font-size:0.8125rem;">{{ form.notes.errors.0 }}</div>
+          {% endif %}
         </div>
 
         {% if form.non_field_errors %}
-        <div class="alert-danger-custom mb-3">{{ form.non_field_errors.0 }}</div>
+        <div class="toast-item toast-error mb-4" style="animation:none;width:100%;">
+          <i data-lucide="alert-circle" style="color:var(--danger);"></i>
+          <span style="color:var(--danger-text);font-weight:600;">{{ form.non_field_errors.0 }}</span>
+        </div>
         {% endif %}
 
-        <div class="d-flex gap-3">
-          <button type="submit" class="btn btn-saffron btn-xl flex-grow-1">💾 Save Changes</button>
-          <a href="{% url 'child_profile' child.pk %}" class="btn btn-outline-purple btn-xl">Cancel</a>
+        <!-- Form Actions -->
+        <div class="d-flex gap-3 pt-2">
+          <button type="submit" class="btn btn-primary btn-lg flex-grow-1 justify-content-center">
+            <i data-lucide="check"></i>
+            <span>Save Changes</span>
+          </button>
+          <a href="{% url 'child_profile' child.pk %}" class="btn btn-secondary btn-lg">
+            <span>Cancel</span>
+          </a>
         </div>
       </form>
     </div>

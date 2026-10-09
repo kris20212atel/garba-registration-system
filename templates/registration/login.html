@@ -1,51 +1,176 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login — Navratri EMS</title>
+  <title>Sign in — Navratri EMS</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪔</text></svg>">
-  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/navratri.css' %}">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/navratri.css' %}?v=2026.4">
+  <style>
+    .login-viewport {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 0%, #EDE9FE 0%, #F8FAFC 70%);
+      padding: 1.5rem;
+    }
+    .login-container-card {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border: 1px solid var(--primary-border);
+      border-radius: var(--radius-xl);
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    }
+    .login-brand-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+    }
+    .input-icon-wrapper {
+      position: relative;
+    }
+    .input-icon-wrapper i {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+    .input-icon-wrapper input {
+      padding-left: 2.5rem;
+    }
+  </style>
 </head>
 <body>
-<div class="login-wrapper">
-  <div class="login-card">
-    <div class="login-logo">🪔</div>
-    <h1>Navratri EMS</h1>
-    <p class="subtitle">Child Gift & Entry Management System<br>Administrator Login</p>
+<div class="login-viewport position-relative">
+  <!-- Theme Toggle Floating Button -->
+  <button type="button" class="btn-icon-toggle position-absolute top-0 end-0 m-4" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+    <i data-lucide="moon" id="themeIconMoon"></i>
+    <i data-lucide="sun" id="themeIconSun" style="display:none;"></i>
+  </button>
+
+  <div class="login-container-card">
+    <div class="text-center mb-4">
+      <div class="login-brand-badge">
+        <i data-lucide="sparkles" style="width:24px;height:24px;"></i>
+      </div>
+      <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.25rem;">Sign in to Navratri EMS</h1>
+      <p style="font-size:0.875rem;color:var(--text-secondary);">Enterprise Event Management & Verification</p>
+    </div>
 
     {% if form.errors %}
-    <div class="alert-danger-custom mb-3">
-      ❌ Invalid username or password. Please try again.
+    <div class="toast-item toast-error mb-4" style="animation:none;">
+      <i data-lucide="alert-circle" style="color:var(--danger);"></i>
+      <span style="font-size:0.85rem;color:var(--danger-text);font-weight:500;">
+        Invalid username or password. Please try again.
+      </span>
     </div>
     {% endif %}
 
     <form method="post" id="loginForm">
       {% csrf_token %}
       <div class="mb-3">
-        <label class="form-label" for="id_username">👤 Username</label>
-        <input type="text" name="username" id="id_username"
-               class="form-control form-control-lg {% if form.username.errors %}is-invalid{% endif %}"
-               placeholder="Enter username" autofocus autocomplete="username" required>
+        <label class="form-label" for="id_username">Username</label>
+        <div class="input-icon-wrapper">
+          <i data-lucide="user"></i>
+          <input type="text" name="username" id="id_username"
+                 class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                 placeholder="Enter administrator username" autofocus autocomplete="username" required>
+        </div>
       </div>
+
       <div class="mb-4">
-        <label class="form-label" for="id_password">🔒 Password</label>
-        <input type="password" name="password" id="id_password"
-               class="form-control form-control-lg {% if form.password.errors %}is-invalid{% endif %}"
-               placeholder="Enter password" autocomplete="current-password" required>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0" for="id_password">Password</label>
+        </div>
+        <div class="input-icon-wrapper">
+          <i data-lucide="lock"></i>
+          <input type="password" name="password" id="id_password"
+                 class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                 placeholder="••••••••" autocomplete="current-password" required>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary btn-xl w-100">
-        🔐 Login
+
+      <button type="submit" class="btn btn-primary w-100 btn-lg" id="submitBtn">
+        <i data-lucide="log-in"></i>
+        <span>Sign in to Dashboard</span>
       </button>
     </form>
 
-    <p class="text-center mt-3" style="font-size:0.8rem;color:var(--text-muted);">
-      Only authorized administrators can access this system.
-    </p>
+    <div class="mt-4 pt-3 text-center border-top" style="border-color:var(--border-subtle) !important;">
+      <p style="font-size:0.75rem;color:var(--text-muted);margin:0;">
+        Navratri 2026 EMS &bull; Secure Administrator Portal
+      </p>
+    </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    updateThemeIcons(nextTheme);
+  }
+
+  function updateThemeIcons(theme) {
+    const moon = document.getElementById('themeIconMoon');
+    const sun = document.getElementById('themeIconSun');
+    if (!moon || !sun) return;
+    if (theme === 'dark') {
+      moon.style.display = 'none';
+      sun.style.display = 'inline-block';
+    } else {
+      moon.style.display = 'inline-block';
+      sun.style.display = 'none';
+    }
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+
+  const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  updateThemeIcons(activeTheme);
+
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-saas me-2"></span> Signing in...';
+  });
+</script>
 </body>
 </html>

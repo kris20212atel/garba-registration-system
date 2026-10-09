@@ -1,82 +1,113 @@
 {% extends 'base.html' %}
-{% block title %}All Children — Navratri EMS{% endblock %}
+{% block title %}Children Directory — Navratri EMS{% endblock %}
+{% block page_heading %}Children Directory{% endblock %}
 
 {% block content %}
-<div class="page-wrapper">
-  <div class="page-header">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-      <div>
-        <h1>👥 Registered Children</h1>
-        <p class="subtitle">Total: <strong>{{ children|length }}</strong> children registered</p>
-      </div>
-      <div class="d-flex gap-2">
-        <a href="{% url 'search' %}" class="btn btn-outline-purple btn-lg">🔍 Search</a>
-        <a href="{% url 'register_child' %}" class="btn btn-saffron btn-lg">➕ Register New</a>
-      </div>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <h1 class="mb-0" style="font-size:1.75rem;font-weight:700;">Children Directory</h1>
+      <span class="badge-chip badge-slate">{{ children|length }} registered</span>
     </div>
+    <p class="mb-0 text-secondary" style="font-size:0.9375rem;">Manage all enrolled children and review historical attendance records.</p>
   </div>
-
-  {% if children %}
-  <div class="card">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table-navratri">
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>Registration ID</th>
-              <th>Child Name</th>
-              <th>Guardian</th>
-              <th>Phone</th>
-              <th>Age</th>
-              <th>Registered</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for child in children %}
-            <tr>
-              <td>
-                {% if child.photo %}
-                <img src="{{ child.photo.url }}" alt="{{ child.name }}"
-                     style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:2px solid var(--border);">
-                {% else %}
-                <div style="width:50px;height:50px;background:var(--purple-lite);border-radius:8px;
-                            display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👶</div>
-                {% endif %}
-              </td>
-              <td>
-                <span class="fw-700" style="color:var(--purple);font-size:1rem;letter-spacing:1px;">
-                  {{ child.registration_id }}
-                </span>
-              </td>
-              <td><strong>{{ child.name }}</strong></td>
-              <td>{{ child.guardian_name }}</td>
-              <td>{{ child.phone }}</td>
-              <td>{{ child.age|default:"—" }}</td>
-              <td style="font-size:0.8rem;color:var(--text-muted);">{{ child.created_at|date:"d M Y" }}</td>
-              <td>
-                <div class="d-flex gap-1 flex-wrap">
-                  <a href="{% url 'child_profile' child.pk %}" class="btn btn-sm btn-primary">View</a>
-                  <a href="{% url 'edit_child' child.pk %}" class="btn btn-sm btn-saffron">Edit</a>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-  {% else %}
-  <div class="card p-5 text-center">
-    <div style="font-size:4rem;">👶</div>
-    <h4 class="fw-700 mt-3" style="color:var(--purple-dark);">No children registered yet</h4>
-    <p style="color:var(--text-muted);">Start by registering the first child.</p>
-    <a href="{% url 'register_child' %}" class="btn btn-saffron btn-xl mx-auto" style="width:auto;display:inline-flex;">
-      ➕ Register First Child
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'search' %}" class="btn btn-secondary">
+      <i data-lucide="search"></i>
+      <span>Search</span>
+    </a>
+    <a href="{% url 'register_child' %}" class="btn btn-primary">
+      <i data-lucide="user-plus"></i>
+      <span>Register Child</span>
     </a>
   </div>
-  {% endif %}
 </div>
+
+{% if children %}
+<div class="card mb-4">
+  <div class="card-body-clean p-0">
+    <div class="table-responsive">
+      <table class="saas-table">
+        <thead>
+          <tr>
+            <th>Child Photo & Name</th>
+            <th>Child ID</th>
+            <th>Guardian</th>
+            <th>Contact Phone</th>
+            <th>Age</th>
+            <th>Registered Date</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for child in children %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {% if child.photo %}
+                <img src="{{ child.photo.url }}" alt="{{ child.name }}" class="child-avatar-sm">
+                {% else %}
+                <div class="child-avatar-placeholder-sm">{{ child.name|make_list|first|upper }}</div>
+                {% endif %}
+                <div>
+                  <a href="{% url 'child_profile' child.pk %}" class="fw-semibold text-primary">
+                    {{ child.name }}
+                  </a>
+                  {% if child.notes %}
+                  <div class="text-muted" style="font-size:0.75rem;">{{ child.notes|truncatechars:28 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="id-pill">{{ child.registration_id }}</span>
+            </td>
+            <td class="text-secondary">{{ child.guardian_name }}</td>
+            <td class="text-secondary">{{ child.phone }}</td>
+            <td>
+              {% if child.age %}
+              <span class="badge-chip badge-slate">{{ child.age }} yrs</span>
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-secondary" style="font-size:0.8125rem;">
+              {{ child.created_at|date:"d M Y" }}
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center gap-1">
+                <a href="{% url 'child_profile' child.pk %}" class="btn btn-secondary btn-sm" title="View Profile">
+                  <i data-lucide="user"></i> View
+                </a>
+                <a href="{% url 'id_card' child.pk %}" class="btn btn-secondary btn-sm" title="ID Badge">
+                  <i data-lucide="credit-card"></i> Badge
+                </a>
+                <a href="{% url 'edit_child' child.pk %}" class="btn btn-secondary btn-sm" title="Edit Child">
+                  <i data-lucide="pencil"></i> Edit
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="card p-5 text-center">
+  <div class="empty-state py-4">
+    <div class="empty-state-icon">
+      <i data-lucide="users"></i>
+    </div>
+    <div class="empty-state-title">No children registered yet</div>
+    <div class="empty-state-desc">Begin event enrollment by registering the first participant.</div>
+    <a href="{% url 'register_child' %}" class="btn btn-primary btn-lg">
+      <i data-lucide="user-plus"></i>
+      <span>Register First Child</span>
+    </a>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
